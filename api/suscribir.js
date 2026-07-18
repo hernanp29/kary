@@ -41,7 +41,7 @@ export default async function handler(req, res) {
     // Enviar el email con el material
     const pdfUrl = process.env.PDF_URL
 
-    await resend.emails.send({
+    const { data: emailData, error: emailError } = await resend.emails.send({
       from: process.env.RESEND_FROM,
       to: cleanEmail,
       subject: 'Bienvenida al círculo sagrado 🌙',
@@ -54,6 +54,13 @@ export default async function handler(req, res) {
         </div>
       `,
     })
+
+    if (emailError) {
+      console.error('Resend error:', emailError)
+      return res.status(500).json({ error: 'No se pudo enviar el email: ' + emailError.message })
+    }
+
+    console.log('Email enviado correctamente:', emailData)
 
     return res.status(200).json({ ok: true })
   } catch (err) {
