@@ -1,0 +1,85 @@
+:root {
+  /* Color — verde noche + dorado, línea "arte & magia" */
+  --verde-noche: #1b241d;
+  --verde-musgo: #2e3b2a;
+  --dorado: #b7924a;
+  --dorado-claro: #d9bd82;
+  --crema: #f3ede0;
+  --hueso: #e9e1cf;
+  --linea: rgba(183, 146, 74, 0.35);
+
+  /* Tipografía */
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Jost', sans-serif;
+
+  --radius: 4px;
+
+  /* Alias de compatibilidad: mismas variables que ya usan Publicaciones,
+     Tienda, Talleres, Login y Admin, remapeadas a la nueva paleta
+     (fondo oscuro + dorado) para que hereden el look sin reescribir cada CSS. */
+  --paper: var(--verde-noche);
+  --paper-raised: var(--verde-musgo);
+  --ink: var(--crema);
+  --leaf: var(--dorado);
+  --leaf-deep: var(--dorado-claro);
+  --amber: var(--dorado);
+  --root: #b98a63;
+  --moss: rgba(233, 225, 207, 0.6);
+  --line: var(--linea);
+  --font-mono: var(--font-body);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--verde-noche);
+  color: var(--crema);
+  font-family: var(--font-body);
+  font-weight: 300;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, .brand-name {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.label-mono {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: var(--dorado);
+}
+
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+/* Textura sutil de fondo, sitio entero */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(183, 146, 74, 0.07), transparent 45%),
+    radial-gradient(circle at 85% 90%, rgba(183, 146, 74, 0.06), transparent 45%);
+  pointer-events: none;
+  z-index: 0;
+}

@@ -1,0 +1,43 @@
+footer {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 70px 24px 40px;
+  border-top: 1px solid var(--linea);
+  margin-top: 40px;
+}
+footer .brand-name { font-size: 1.6rem; }
+footer .socials {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin: 22px 0 26px;
+}
+footer .socials img {
+  width: 20px;
+  height: 20px;
+  filter: invert(84%) sepia(15%) saturate(500%) hue-rotate(0deg) brightness(96%);
+  opacity: 0.85;
+  transition: opacity 0.25s, transform 0.25s;
+}
+footer .socials a:hover img { opacity: 1; transform: translateY(-2px); }
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hueso);
+  opacity: 0.75;
+  margin-bottom: 26px;
+}
+.footer-links a:hover { opacity: 1; color: var(--dorado-claro); }
+
+.creado {
+  font-size: 0.72rem;
+  color: var(--hueso);
+  opacity: 0.4;
+}
