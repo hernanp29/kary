@@ -134,6 +134,7 @@ export default function Home() {
         <p>
           Únete ahora para obtener acceso anticipado a ejercicios, mensajes del universo
           y consejos para manifestar la vida que realmente deseas tener.
+          Con tu registro te enviamos un PDF gratuito de "plantas medicinales y usos mágicos "
         </p>
         <SubscribeForm />
       </section>
