@@ -3,6 +3,15 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import './Publicaciones.css'
 
+function formatearFecha(fecha) {
+  if (!fecha) return ''
+  return new Date(fecha).toLocaleDateString('es-AR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
 export default function Publicaciones() {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -45,7 +54,6 @@ export default function Publicaciones() {
       </div>
 
       {loading && <p className="label-mono">Cargando publicaciones…</p>}
-
       {!loading && visible.length === 0 && (
         <p className="publicaciones__empty">
           Todavía no hay publicaciones {category !== 'todas' ? `en "${category}"` : ''}. Cargá la primera desde el panel de admin.
@@ -61,6 +69,9 @@ export default function Publicaciones() {
             <span className="label-mono">{post.category}</span>
             <h3>{post.title}</h3>
             <p>{post.excerpt}</p>
+            {post.published_at && (
+              <span className="post-card__fecha label-mono">{formatearFecha(post.published_at)}</span>
+            )}
           </Link>
         ))}
       </div>
