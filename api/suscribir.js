@@ -1,11 +1,21 @@
 import { createClient } from '@supabase/supabase-js'
-import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 
 // Cliente de Supabase con la service_role key: corre solo en el servidor,
 // nunca se expone al navegador, y bypassea RLS para poder insertar en
 // la tabla "suscriptores" (que no tiene policies públicas).
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
-const resend = new Resend(process.env.RESEND_API_KEY)
+
+// Transportador de Gmail: usa tu propio Gmail + un "App Password"
+// (NO tu contraseña normal de Google). Se genera en
+// myaccount.google.com/apppasswords con la verificación en 2 pasos activada.
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER, // ej: poncehernan29@gmail.com
+    pass: process.env.GMAIL_APP_PASSWORD, // el App Password de 16 caracteres
+  },
+})
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -38,29 +48,28 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'No se pudo guardar tu suscripción. Probá de nuevo.' })
     }
 
-    // Enviar el email con el material
+    // Enviar el email con el material, usando tu Gmail
     const pdfUrl = process.env.PDF_URL
 
-    const { data: emailData, error: emailError } = await resend.emails.send({
-      from: process.env.RESEND_FROM,
-      to: cleanEmail,
-      subject: 'Bienvenida al círculo sagrado 🌙',
-      html: `
-        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-          <h2>¡Bienvenida, ${fullName}!</h2>
-          <p>Gracias por sumarte a la comunidad. Acá tenés tu material:</p>
-          ${pdfUrl ? `<p><a href="${pdfUrl}" target="_blank">Descargar PDF</a></p>` : ''}
-          <p>Un abrazo,<br/>Karina</p>
-        </div>
-      `,
-    })
-
-    if (emailError) {
-      console.error('Resend error:', emailError)
-      return res.status(500).json({ error: 'No se pudo enviar el email: ' + emailError.message })
+    try {
+      const info = await transporter.sendMail({
+        from: `"Karina de la Lama" <${process.env.GMAIL_USER}>`,
+        to: cleanEmail,
+        subject: 'Bienvenida al círculo sagrado 🌙',
+        html: `
+          <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+            <h2>¡Bienvenida, ${fullName}!</h2>
+            <p>Gracias por sumarte a la comunidad. Acá tenés tu material:</p>
+            ${pdfUrl ? `<p><a href="${pdfUrl}" target="_blank">Descargar PDF</a></p>` : ''}
+            <p>Un abrazo,<br/>Karina</p>
+          </div>
+        `,
+      })
+      console.log('Email enviado correctamente:', info.messageId)
+    } catch (emailErr) {
+      console.error('Error al enviar email con Gmail:', emailErr)
+      return res.status(500).json({ error: 'No se pudo enviar el email: ' + emailErr.message })
     }
-
-    console.log('Email enviado correctamente:', emailData)
 
     return res.status(200).json({ ok: true })
   } catch (err) {
