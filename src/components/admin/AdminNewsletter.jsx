@@ -1,12 +1,35 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
+const MAX_TOTAL_MB = 12 // dejamos margen bajo el límite de 15mb del endpoint
+
+function leerArchivoComoBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      // reader.result viene como "data:image/png;base64,AAAA..." — nos quedamos solo con la parte base64
+      const base64 = reader.result.split(',')[1]
+      resolve({
+        filename: file.name,
+        contentType: file.type || 'application/octet-stream',
+        content: base64,
+        size: file.size,
+      })
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
 export default function AdminNewsletter() {
   const [totalSuscriptores, setTotalSuscriptores] = useState(null)
   const [loadingCount, setLoadingCount] = useState(true)
 
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
+  const [archivos, setArchivos] = useState([]) // [{filename, contentType, content, size}]
+  const [archivoError, setArchivoError] = useState('')
+
   const [sending, setSending] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [result, setResult] = useState(null)
@@ -28,13 +51,32 @@ export default function AdminNewsletter() {
       const headers = await authHeader()
       const res = await fetch('/api/suscriptores-admin', { headers })
       const data = await res.json()
-      if (res.ok) {
-        setTotalSuscriptores(data.total)
-      }
+      if (res.ok) setTotalSuscriptores(data.total)
     } catch (err) {
       console.error(err)
     }
     setLoadingCount(false)
+  }
+
+  async function handleFileChange(e) {
+    setArchivoError('')
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+
+    const nuevos = await Promise.all(files.map(leerArchivoComoBase64))
+
+    const totalBytes = [...archivos, ...nuevos].reduce((sum, f) => sum + f.size, 0)
+    if (totalBytes > MAX_TOTAL_MB * 1024 * 1024) {
+      setArchivoError(`El total de archivos no puede superar los ${MAX_TOTAL_MB}MB (Gmail y el servidor tienen límite).`)
+      return
+    }
+
+    setArchivos((prev) => [...prev, ...nuevos])
+    e.target.value = '' // permite volver a elegir el mismo archivo si lo saca y lo quiere agregar de nuevo
+  }
+
+  function quitarArchivo(index) {
+    setArchivos((prev) => prev.filter((_, i) => i !== index))
   }
 
   async function handleSend() {
@@ -47,7 +89,11 @@ export default function AdminNewsletter() {
       const res = await fetch('/api/enviar-newsletter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...headers },
-        body: JSON.stringify({ subject, message }),
+        body: JSON.stringify({
+          subject,
+          message,
+          attachments: archivos.map(({ filename, contentType, content }) => ({ filename, contentType, content })),
+        }),
       })
       const data = await res.json()
 
@@ -57,6 +103,7 @@ export default function AdminNewsletter() {
         setResult(data)
         setSubject('')
         setMessage('')
+        setArchivos([])
       }
     } catch (err) {
       setError('Algo salió mal: ' + err.message)
@@ -98,6 +145,32 @@ export default function AdminNewsletter() {
             placeholder={'Escribí acá el contenido.\n\nUsá "## " al inicio de una línea para un subtítulo, y una línea vacía para separar párrafos — igual que en el blog.'}
           />
         </label>
+
+        <label>
+          Imágenes o archivos adjuntos (opcional)
+          <input type="file" multiple onChange={handleFileChange} accept="image/*,.pdf,.doc,.docx" />
+        </label>
+
+        {archivoError && <p className="admin-error">{archivoError}</p>}
+
+        {archivos.length > 0 && (
+          <ul className="admin-list">
+            {archivos.map((f, i) => (
+              <li key={i} className="admin-list__item">
+                {f.contentType.startsWith('image/') ? '🖼️' : '📎'} {f.filename}
+                <span className="label-mono"> · {(f.size / 1024).toFixed(0)}kb</span>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ marginLeft: 12 }}
+                  onClick={() => quitarArchivo(i)}
+                >
+                  Quitar
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {!confirming && (
           <button type="submit" className="btn-primary" disabled={sending || !totalSuscriptores}>
