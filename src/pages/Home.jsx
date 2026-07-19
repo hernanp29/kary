@@ -169,13 +169,22 @@ export default function Home() {
             style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '22px', marginTop: '20px' }}
           >
             <a href="https://www.instagram.com/karinaarteymagia369?igsh=cWc5c3RjYzg0ZXlj" target="_blank" rel="noopener">
-              <img src="https://d1yei2z3i6k35z.cloudfront.net/161/62a8d3cdab074_instagram.png" alt="Instagram" style={{ width: '26px', height: '26px', objectFit: 'contain' }} />
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--dorado, #B7924A)" strokeWidth="1.6" aria-label="Instagram">
+                <rect x="2.5" y="2.5" width="19" height="19" rx="5" />
+                <circle cx="12" cy="12" r="4.2" />
+                <circle cx="17.4" cy="6.6" r="1.1" fill="var(--dorado, #B7924A)" stroke="none" />
+              </svg>
             </a>
             <a href="#" target="_blank" rel="noopener">
-              <img src="https://d1yei2z3i6k35z.cloudfront.net/161/62a8d367aaa51_facebook.png" alt="Facebook" style={{ width: '26px', height: '26px', objectFit: 'contain' }} />
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="var(--dorado, #B7924A)" aria-label="Facebook">
+                <path d="M15.5 8.5H13.8c-.6 0-1 .5-1 1.1V12h2.6l-.35 2.7H12.8V22H9.9v-7.3H7.7V12h2.2V9.4C9.9 6.9 11.4 5.5 13.7 5.5c1.1 0 2 .1 2.3.1v2.9z" />
+              </svg>
             </a>
             <a href="#" target="_blank" rel="noopener">
-              <img src="https://d1yei2z3i6k35z.cloudfront.net/161/62a8d3eb46d7e_yotube.png" alt="YouTube" style={{ width: '26px', height: '26px', objectFit: 'contain' }} />
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--dorado, #B7924A)" strokeWidth="1.6" aria-label="YouTube">
+                <rect x="2.5" y="5.5" width="19" height="13" rx="4" />
+                <path d="M10.3 9.6l5 2.4-5 2.4z" fill="var(--dorado, #B7924A)" stroke="none" />
+              </svg>
             </a>
             <a href="https://wa.me/5491159377545" target="_blank" rel="noopener">
               <svg viewBox="0 0 24 24" width="26" height="26" fill="var(--dorado, #B7924A)" aria-label="WhatsApp">
