@@ -15,35 +15,50 @@ export default function Tienda() {
   // Carrito acumulado: { [productId]: { id, name, price, qty } }
   const [cart, setCart] = useState({})
   const [showCart, setShowCart] = useState(false)
+  const [checkingOut, setCheckingOut] = useState(false)
+  const [checkoutMessage, setCheckoutMessage] = useState('')
 
   useEffect(() => {
-    async function fetchAll() {
-      setLoading(true)
-      const [{ data: cats }, { data: prods }] = await Promise.all([
-        supabase.from('categorias').select('id, nombre, descripcion').order('nombre'),
-        supabase
-          .from('products')
-          .select('id, name, slug, description, price, image_url, status, category_id')
-          .order('created_at', { ascending: false }),
-      ])
-      setCategorias(cats || [])
-      setProducts(prods || [])
-      setLoading(false)
-    }
     fetchAll()
   }, [])
 
-  function getDraftQty(id) {
-    return qtyDraft[id] ?? 1
+  async function fetchAll() {
+    setLoading(true)
+    const [{ data: cats }, { data: prods }] = await Promise.all([
+      supabase.from('categorias').select('id, nombre, descripcion').order('nombre'),
+      supabase
+        .from('products')
+        .select('id, name, slug, description, price, image_url, stock, category_id')
+        .order('created_at', { ascending: false }),
+    ])
+    setCategorias(cats || [])
+    setProducts(prods || [])
+    setLoading(false)
   }
 
-  function setDraftQty(id, value) {
-    const n = Math.max(1, Number(value) || 1)
-    setQtyDraft((prev) => ({ ...prev, [id]: n }))
+  // Cuánto queda disponible de un producto, restando lo que ya está en el carrito
+  function disponible(product) {
+    const enCarrito = cart[product.id]?.qty || 0
+    return Math.max(0, (product.stock ?? 0) - enCarrito)
+  }
+
+  function getDraftQty(product) {
+    const max = disponible(product)
+    const draft = qtyDraft[product.id] ?? (max > 0 ? 1 : 0)
+    return Math.min(draft, max)
+  }
+
+  function setDraftQty(product, value) {
+    const max = disponible(product)
+    const n = Math.max(1, Math.min(Number(value) || 1, max))
+    setQtyDraft((prev) => ({ ...prev, [product.id]: n }))
   }
 
   function addToCart(product) {
-    const qty = getDraftQty(product.id)
+    const max = disponible(product)
+    const qty = Math.min(getDraftQty(product), max)
+    if (qty <= 0) return
+
     setCart((prev) => {
       const existing = prev[product.id]
       return {
@@ -56,14 +71,17 @@ export default function Tienda() {
         },
       }
     })
+    setQtyDraft((prev) => ({ ...prev, [product.id]: 1 }))
     setShowCart(true)
   }
 
   function changeCartQty(id, delta) {
+    const product = products.find((p) => p.id === id)
     setCart((prev) => {
       const item = prev[id]
       if (!item) return prev
-      const nextQty = item.qty + delta
+      const maxTotal = product ? product.stock ?? 0 : item.qty
+      const nextQty = Math.min(item.qty + delta, maxTotal)
       if (nextQty <= 0) {
         const { [id]: _, ...rest } = prev
         return rest
@@ -86,25 +104,62 @@ export default function Tienda() {
     [cartItems]
   )
 
-  function cerrarCuenta() {
+  async function cerrarCuenta() {
     if (cartItems.length === 0) return
+    setCheckingOut(true)
+    setCheckoutMessage('')
 
-    const lineas = cartItems.map(
-      (i) => `- ${i.name} x${i.qty} — $${(i.qty * Number(i.price)).toLocaleString('es-AR')}`
-    )
-    const mensaje = [
-      'Hola! Quiero hacer este pedido:',
-      '',
-      ...lineas,
-      '',
-      `Total: $${cartTotal.toLocaleString('es-AR')}`,
-    ].join('\n')
+    try {
+      // Descontar el stock de cada producto del pedido
+      for (const item of cartItems) {
+        const product = products.find((p) => p.id === item.id)
+        const stockActual = product?.stock ?? 0
+        const nuevoStock = Math.max(0, stockActual - item.qty)
 
-    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`
-    window.open(url, '_blank')
+        const { error } = await supabase
+          .from('products')
+          .update({ stock: nuevoStock })
+          .eq('id', item.id)
+
+        if (error) {
+          setCheckoutMessage('No se pudo descontar el stock de "' + item.name + '": ' + error.message)
+          setCheckingOut(false)
+          return
+        }
+      }
+
+      // Reflejar el nuevo stock localmente
+      setProducts((prev) =>
+        prev.map((p) => {
+          const item = cart[p.id]
+          if (!item) return p
+          return { ...p, stock: Math.max(0, (p.stock ?? 0) - item.qty) }
+        })
+      )
+
+      const lineas = cartItems.map(
+        (i) => `- ${i.name} x${i.qty} — $${(i.qty * Number(i.price)).toLocaleString('es-AR')}`
+      )
+      const mensaje = [
+        'Hola! Quiero hacer este pedido:',
+        '',
+        ...lineas,
+        '',
+        `Total: $${cartTotal.toLocaleString('es-AR')}`,
+      ].join('\n')
+
+      const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`
+      window.open(url, '_blank')
+
+      setCart({})
+      setShowCart(false)
+    } catch (err) {
+      setCheckoutMessage('Algo salió mal: ' + err.message)
+    } finally {
+      setCheckingOut(false)
+    }
   }
 
-  // Agrupar productos por categoría
   const gruposPorCategoria = categorias
     .map((cat) => ({
       ...cat,
@@ -112,10 +167,12 @@ export default function Tienda() {
     }))
     .filter((grupo) => grupo.productos.length > 0)
 
-  // Productos sin categoría asignada (por si quedó alguno viejo)
   const sinCategoria = products.filter((p) => !p.category_id)
 
   function ProductCard(p) {
+    const max = disponible(p)
+    const agotado = (p.stock ?? 0) <= 0
+
     return (
       <article key={p.id} className="product-card">
         {p.image_url && <img src={p.image_url} alt={p.name} className="product-card__image" />}
@@ -125,32 +182,37 @@ export default function Tienda() {
           <div className="product-card__footer" style={{ flexWrap: 'wrap', gap: '10px' }}>
             <span className="label-mono">${p.price}</span>
 
-            {p.status !== 'agotado' ? (
+            {!agotado ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <button
                     type="button"
                     className="btn-buy"
                     style={{ padding: '4px 10px' }}
-                    onClick={() => setDraftQty(p.id, getDraftQty(p.id) - 1)}
+                    disabled={getDraftQty(p) <= 1}
+                    onClick={() => setDraftQty(p, getDraftQty(p) - 1)}
                   >
                     −
                   </button>
                   <span className="label-mono" style={{ minWidth: '18px', textAlign: 'center' }}>
-                    {getDraftQty(p.id)}
+                    {getDraftQty(p)}
                   </span>
                   <button
                     type="button"
                     className="btn-buy"
                     style={{ padding: '4px 10px' }}
-                    onClick={() => setDraftQty(p.id, getDraftQty(p.id) + 1)}
+                    disabled={getDraftQty(p) >= max}
+                    onClick={() => setDraftQty(p, getDraftQty(p) + 1)}
                   >
                     +
                   </button>
                 </div>
-                <button className="btn-buy" onClick={() => addToCart(p)}>
-                  Agregar
+                <button className="btn-buy" disabled={max <= 0} onClick={() => addToCart(p)}>
+                  {max <= 0 ? 'En el carrito' : 'Agregar'}
                 </button>
+                <span className="label-mono" style={{ opacity: 0.6, fontSize: '0.75rem' }}>
+                  {max} disponible{max === 1 ? '' : 's'}
+                </span>
               </div>
             ) : (
               <button className="btn-buy" disabled>
@@ -173,8 +235,7 @@ export default function Tienda() {
       {loading && <p className="label-mono">Cargando catálogo…</p>}
       {!loading && products.length === 0 && (
         <p className="tienda__empty">
-          Todavía no hay productos cargados. Agregá el primero desde el panel de admin
-          — no hace falta gestión de stock automática para empezar, marcás "disponible/agotado" a mano.
+          Todavía no hay productos cargados. Agregá el primero desde el panel de admin.
         </p>
       )}
 
@@ -201,7 +262,6 @@ export default function Tienda() {
         </section>
       )}
 
-      {/* Botón flotante del carrito */}
       {cartCount > 0 && (
         <button
           type="button"
@@ -226,7 +286,6 @@ export default function Tienda() {
         </button>
       )}
 
-      {/* Panel del carrito */}
       {showCart && cartCount > 0 && (
         <div
           style={{
@@ -273,9 +332,13 @@ export default function Tienda() {
             </div>
           </div>
 
-          <button className="btn-buy" style={{ width: '100%' }} onClick={cerrarCuenta}>
-            Cerrar cuenta por WhatsApp
+          <button className="btn-buy" style={{ width: '100%' }} disabled={checkingOut} onClick={cerrarCuenta}>
+            {checkingOut ? 'Descontando stock…' : 'Cerrar cuenta por WhatsApp'}
           </button>
+
+          {checkoutMessage && (
+            <p className="label-mono" style={{ color: '#d98a6a', marginTop: '10px' }}>{checkoutMessage}</p>
+          )}
         </div>
       )}
     </div>
