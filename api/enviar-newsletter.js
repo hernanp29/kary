@@ -13,6 +13,16 @@ const transporter = nodemailer.createTransport({
   },
 })
 
+// Vercel limita el tamaño del body de las funciones API — subimos el límite
+// por defecto (1mb) para poder mandar imágenes/archivos adjuntos en base64.
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '15mb',
+    },
+  },
+}
+
 async function getAuthorizedUser(req) {
   const authHeader = req.headers.authorization || ''
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
@@ -53,8 +63,6 @@ function mensajeAHtml(mensaje) {
   return partes.join('\n')
 }
 
-// Pausa entre envíos para no saturar el límite de Gmail (evita que te
-// marque la cuenta como spam por mandar todo de golpe).
 function esperar(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
@@ -70,7 +78,7 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: 'No autorizado.' })
   }
 
-  const { subject, message } = req.body || {}
+  const { subject, message, attachments } = req.body || {}
   if (!subject || !subject.trim()) {
     return res.status(400).json({ error: 'Falta el asunto.' })
   }
@@ -91,7 +99,38 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'No hay suscriptores para enviar.' })
   }
 
+  // Separar adjuntos: las imágenes se embeben en el cuerpo (cid),
+  // el resto (PDF, docs, etc.) va como adjunto normal para descargar.
+  const archivosAdjuntos = Array.isArray(attachments) ? attachments : []
+  const nodemailerAttachments = []
+  const imagenesInlineHtml = []
+
+  archivosAdjuntos.forEach((file, i) => {
+    const esImagen = (file.contentType || '').startsWith('image/')
+    const buffer = Buffer.from(file.content, 'base64')
+
+    if (esImagen) {
+      const cid = `imagen-${i}`
+      nodemailerAttachments.push({
+        filename: file.filename,
+        content: buffer,
+        contentType: file.contentType,
+        cid,
+      })
+      imagenesInlineHtml.push(
+        `<img src="cid:${cid}" alt="${file.filename}" style="max-width:100%;margin-top:16px;border-radius:8px;" />`
+      )
+    } else {
+      nodemailerAttachments.push({
+        filename: file.filename,
+        content: buffer,
+        contentType: file.contentType,
+      })
+    }
+  })
+
   const cuerpoHtml = mensajeAHtml(message.trim())
+  const imagenesHtml = imagenesInlineHtml.join('\n')
 
   let enviados = 0
   const fallidos = []
@@ -107,16 +146,17 @@ export default async function handler(req, res) {
           <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
             ${nombre ? `<p style="margin:0 0 16px;">Hola ${nombre},</p>` : ''}
             ${cuerpoHtml}
+            ${imagenesHtml}
             <p style="margin-top:28px;">Un abrazo,<br/>Karina</p>
           </div>
         `,
+        attachments: nodemailerAttachments,
       })
       enviados++
     } catch (err) {
       console.error('Error al enviar a', s.email, err)
       fallidos.push(s.email)
     }
-    // Pequeña pausa entre envíos (Gmail no anda bien con ráfagas grandes)
     await esperar(300)
   }
 
