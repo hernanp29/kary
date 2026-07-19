@@ -3,16 +3,6 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import './Home.css'
 
-const INSTA_IMAGES = [
-  'https://d1yei2z3i6k35z.cloudfront.net/18220893/6a4d71a22a9e82.27004821_ritual1.jpeg',
-  'https://d1yei2z3i6k35z.cloudfront.net/18220893/6a4d6fefcffdf1.74658003_fotoperfil.jpeg',
-  'https://d1yei2z3i6k35z.cloudfront.net/18220893/6a4d6fc25ea911.95892194_logo2.jpg',
-  'https://d1yei2z3i6k35z.cloudfront.net/18220893/6a4d71f593fd09.60174968_zentangle.jpeg',
-  'https://d1yei2z3i6k35z.cloudfront.net/18220893/6a4d72187e7be3.17605290_escoba.jpg',
-  'https://d1yei2z3i6k35z.cloudfront.net/18220893/6a4d723ad4edd9.87116894_infusion.jpg',
-]
-
-
 function SubscribeForm() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -178,15 +168,7 @@ export default function Home() {
             @karinaarteymagia369
           </a>
         </div>
-        <div className="insta-grid">
-          {INSTA_IMAGES.map((src) => (
-            <a href="https://www.instagram.com/karinaarteymagia369/" target="_blank" rel="noopener" key={src}>
-              <img src={src} alt="" />
-            </a>
-          ))}
-        </div>
       </section>
     </div>
   )
 }
-
