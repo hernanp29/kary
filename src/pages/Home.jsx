@@ -180,7 +180,7 @@ export default function Home() {
                 <path d="M15.5 8.5H13.8c-.6 0-1 .5-1 1.1V12h2.6l-.35 2.7H12.8V22H9.9v-7.3H7.7V12h2.2V9.4C9.9 6.9 11.4 5.5 13.7 5.5c1.1 0 2 .1 2.3.1v2.9z" />
               </svg>
             </a>
-            <a href="#" target="_blank" rel="noopener">
+            <a href="https://www.youtube.com/@karinadelalama369" target="_blank" rel="noopener">
               <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--dorado, #B7924A)" strokeWidth="1.6" aria-label="YouTube">
                 <rect x="2.5" y="5.5" width="19" height="13" rx="4" />
                 <path d="M10.3 9.6l5 2.4-5 2.4z" fill="var(--dorado, #B7924A)" stroke="none" />
