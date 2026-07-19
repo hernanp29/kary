@@ -82,6 +82,45 @@ function SubscribeForm() {
   )
 }
 
+function Bienvenida() {
+  return (
+    <section className="bienvenida">
+      <div className="bienvenida__imagen">
+        <img src="https://i.ibb.co/KxBt7YHJ/reja.jpg" alt="Jardín secreto" />
+      </div>
+      <div className="bienvenida__texto">
+        <span className="eyebrow">Bienvenida</span>
+        <h2>Bienvenida a mi jardín secreto</h2>
+        <p>
+          Este espacio nació del deseo de compartir los saberes y las experiencias que han
+          transformado mi manera de habitar el mundo. Es un jardín cultivado con paciencia,
+          donde cada planta, cada símbolo y cada ritual guarda una historia que merece ser contada.
+        </p>
+        <p>
+          Aquí encontrarás la medicina de las plantas, la belleza de la geometría sagrada, la
+          sabiduría de los ciclos de la naturaleza y pequeños rituales para volver a lo esencial.
+          También compartiré recetas, libros, imprimibles y reflexiones que forman parte de mi camino.
+        </p>
+        <p>
+          No pretendo tener todas las respuestas. Mi intención es abrir un espacio de encuentro,
+          donde el conocimiento ancestral dialogue con la experiencia cotidiana y donde cada
+          persona pueda descubrir su propia forma de conectar con la naturaleza.
+        </p>
+        <p>
+          Gracias por llegar hasta acá. Espero que este jardín sea un refugio para detenerte un
+          instante, aprender algo nuevo y recordar que también somos naturaleza.
+        </p>
+        <p>Las puertas quedan abiertas.</p>
+        <p className="bienvenida__firma">
+          Con amor,<br />
+          Karina De La Lama<br />
+          <em>—arte &amp; magia—</em>
+        </p>
+      </div>
+    </section>
+  )
+}
+
 export default function Home() {
   const [posts, setPosts] = useState([])
   const [loadingPosts, setLoadingPosts] = useState(true)
@@ -103,6 +142,8 @@ export default function Home() {
 
   return (
     <div className="home">
+      <Bienvenida />
+
       <section className="hero" id="inicio">
         <span className="eyebrow">Círculo sagrado</span>
         <h2>Sé parte de esta comunidad</h2>
@@ -139,7 +180,7 @@ export default function Home() {
 
         <div className="blog-grid">
           {posts.map((post, i) => (
-            <Link to="/publicaciones" className="blog-card" key={post.id}>
+            <Link to={`/publicaciones/${post.slug}`} className="blog-card" key={post.id}>
               <span className="num">{String(i + 1).padStart(2, '0')}</span>
               <h3>{post.title}</h3>
               <p>{post.excerpt}</p>
