@@ -210,9 +210,6 @@ export default function Tienda() {
                 <button className="btn-buy" disabled={max <= 0} onClick={() => addToCart(p)}>
                   {max <= 0 ? 'En el carrito' : 'Agregar'}
                 </button>
-                <span className="label-mono" style={{ opacity: 0.6, fontSize: '0.75rem' }}>
-                  {max} disponible{max === 1 ? '' : 's'}
-                </span>
               </div>
             ) : (
               <button className="btn-buy" disabled>
@@ -344,4 +341,3 @@ export default function Tienda() {
     </div>
   )
 }
-
