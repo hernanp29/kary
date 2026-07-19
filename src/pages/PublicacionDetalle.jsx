@@ -3,6 +3,15 @@ import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import './Publicaciones.css'
 
+function formatearFecha(fecha) {
+  if (!fecha) return ''
+  return new Date(fecha).toLocaleDateString('es-AR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
 // Convención simple para el contenido guardado como texto plano:
 // - Una línea que empieza con "## " se muestra como subtítulo.
 // - Una línea en blanco separa párrafos.
@@ -101,10 +110,12 @@ export default function PublicacionDetalle() {
       )}
       <span className="label-mono">{post.category}</span>
       <h1>{post.title}</h1>
+      {post.published_at && (
+        <p className="post-detalle__fecha label-mono">{formatearFecha(post.published_at)}</p>
+      )}
       <div className="post-detalle__contenido">
         {renderContenido(post.content)}
       </div>
     </div>
   )
 }
-
