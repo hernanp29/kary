@@ -73,7 +73,7 @@ function Bienvenida() {
         <img src="https://i.ibb.co/KxBt7YHJ/reja.jpg" alt="Jardín secreto" />
       </div>
       <div className="bienvenida__texto">
-        <span className="eyebrow">Bienvenida</span>
+        <span className="eyebrow"></span>
         <h2>Bienvenida a mi jardín secreto</h2>
         <p>
           Este espacio nació del deseo de compartir los saberes y las experiencias que han
