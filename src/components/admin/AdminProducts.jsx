@@ -21,7 +21,7 @@ export default function AdminProducts() {
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
   const [imageUrl, setImageUrl] = useState('')
-  const [status, setStatus] = useState('disponible')
+  const [stock, setStock] = useState('0')
 
   // Selección de categoría
   const [categoryId, setCategoryId] = useState('')
@@ -35,6 +35,11 @@ export default function AdminProducts() {
   // Mover producto de categoría (por fila)
   const [movingProductId, setMovingProductId] = useState(null)
 
+  // Edición rápida de stock (por fila)
+  const [editingStockId, setEditingStockId] = useState(null)
+  const [stockDraft, setStockDraft] = useState('')
+  const [savingStock, setSavingStock] = useState(false)
+
   // Eliminar categoría
   const [deletingCategoryId, setDeletingCategoryId] = useState(null)
   const [reassignTarget, setReassignTarget] = useState('')
@@ -44,7 +49,7 @@ export default function AdminProducts() {
   async function fetchAll() {
     setLoading(true)
     const [{ data: prods }, { data: cats }] = await Promise.all([
-      supabase.from('products').select('id, name, slug, description, price, image_url, status, category_id').order('created_at', { ascending: false }),
+      supabase.from('products').select('id, name, slug, description, price, image_url, stock, category_id').order('created_at', { ascending: false }),
       supabase.from('categorias').select('id, nombre, descripcion').order('nombre'),
     ])
     setProducts(prods || [])
@@ -61,7 +66,7 @@ export default function AdminProducts() {
     setDescription('')
     setPrice('')
     setImageUrl('')
-    setStatus('disponible')
+    setStock('0')
     setCategoryId('')
     setCreatingCategory(false)
     setNewCategoryName('')
@@ -90,7 +95,6 @@ export default function AdminProducts() {
       let finalCategoryId = categoryId
 
       if (creatingCategory) {
-        // Si ya existe una categoría con ese nombre, la reutilizamos en vez de fallar
         const { data: existing } = await supabase
           .from('categorias')
           .select('id')
@@ -121,7 +125,7 @@ export default function AdminProducts() {
         description: description.trim(),
         price: Number(price),
         image_url: imageUrl.trim() || null,
-        status,
+        stock: Math.max(0, Number(stock) || 0),
         category_id: finalCategoryId,
       })
 
@@ -160,6 +164,36 @@ export default function AdminProducts() {
     setMovingProductId(null)
   }
 
+  // --- Editar stock de un producto ---
+  function startEditStock(product) {
+    setEditingStockId(product.id)
+    setStockDraft(String(product.stock ?? 0))
+  }
+
+  function cancelEditStock() {
+    setEditingStockId(null)
+    setStockDraft('')
+  }
+
+  async function saveStock(productId) {
+    const nuevoStock = Math.max(0, Number(stockDraft) || 0)
+    setSavingStock(true)
+    const { error } = await supabase
+      .from('products')
+      .update({ stock: nuevoStock })
+      .eq('id', productId)
+
+    if (error) {
+      setMessage('No se pudo actualizar el stock: ' + error.message)
+    } else {
+      setProducts((prev) =>
+        prev.map((p) => (p.id === productId ? { ...p, stock: nuevoStock } : p))
+      )
+      cancelEditStock()
+    }
+    setSavingStock(false)
+  }
+
   function productCountInCategory(categoryId) {
     return products.filter((p) => p.category_id === categoryId).length
   }
@@ -189,7 +223,6 @@ export default function AdminProducts() {
     setCategoryActionMessage('')
 
     try {
-      // Si tiene productos, primero los reasignamos a la categoría elegida
       if (count > 0) {
         const { error: moveError } = await supabase
           .from('products')
@@ -248,11 +281,8 @@ export default function AdminProducts() {
         </label>
 
         <label>
-          Estado
-          <select value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="disponible">Disponible</option>
-            <option value="agotado">Agotado</option>
-          </select>
+          Stock (unidades disponibles)
+          <input type="number" value={stock} onChange={(e) => setStock(e.target.value)} min="0" step="1" />
         </label>
 
         <div className="admin-form__categoria">
@@ -316,10 +346,41 @@ export default function AdminProducts() {
       <ul className="admin-list">
         {products.map((p) => {
           const cat = categorias.find((c) => c.id === p.category_id)
+          const isEditingStock = editingStockId === p.id
+
           return (
             <li key={p.id} className="admin-list__item">
-              <strong>{p.name}</strong> — ${p.price} — {p.status}
+              <strong>{p.name}</strong> — ${p.price}
               {cat && <span className="label-mono"> · {cat.nombre}</span>}
+
+              {!isEditingStock ? (
+                <button
+                  type="button"
+                  className="label-mono"
+                  style={{ marginLeft: 12, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                  onClick={() => startEditStock(p)}
+                  title="Editar stock"
+                >
+                  stock: {p.stock ?? 0}
+                </button>
+              ) : (
+                <span style={{ marginLeft: 12 }}>
+                  <input
+                    type="number"
+                    min="0"
+                    value={stockDraft}
+                    onChange={(e) => setStockDraft(e.target.value)}
+                    style={{ width: '60px' }}
+                    disabled={savingStock}
+                  />
+                  <button type="button" className="btn" disabled={savingStock} onClick={() => saveStock(p.id)}>
+                    {savingStock ? '…' : 'Guardar'}
+                  </button>
+                  <button type="button" className="btn" disabled={savingStock} onClick={cancelEditStock}>
+                    Cancelar
+                  </button>
+                </span>
+              )}
 
               <select
                 value={p.category_id || ''}
@@ -365,23 +426,21 @@ export default function AdminProducts() {
               {isDeleting && (
                 <div style={{ marginTop: 8 }}>
                   {count > 0 && (
-                    <>
-                      <label>
-                        Mover sus {count} producto{count === 1 ? '' : 's'} a
-                        <select
-                          value={reassignTarget}
-                          onChange={(e) => setReassignTarget(e.target.value)}
-                          style={{ marginLeft: 8 }}
-                        >
-                          <option value="">Elegí una categoría destino…</option>
-                          {categorias
-                            .filter((other) => other.id !== c.id)
-                            .map((other) => (
-                              <option key={other.id} value={other.id}>{other.nombre}</option>
-                            ))}
-                        </select>
-                      </label>
-                    </>
+                    <label>
+                      Mover sus {count} producto{count === 1 ? '' : 's'} a
+                      <select
+                        value={reassignTarget}
+                        onChange={(e) => setReassignTarget(e.target.value)}
+                        style={{ marginLeft: 8 }}
+                      >
+                        <option value="">Elegí una categoría destino…</option>
+                        {categorias
+                          .filter((other) => other.id !== c.id)
+                          .map((other) => (
+                            <option key={other.id} value={other.id}>{other.nombre}</option>
+                          ))}
+                      </select>
+                    </label>
                   )}
 
                   <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
