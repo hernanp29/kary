@@ -26,7 +26,7 @@ export default function SiteFooter() {
         <a href="#">Política de privacidad</a>
         <Link to="/login">Acceder</Link>
       </div>
-      <div className="creado">© Karina de la Lama — Arte &amp; Magia</div>
+      <div className="creado">© Karina De La Lama — Arte &amp; Magia</div>
     </footer>
   )
 }
