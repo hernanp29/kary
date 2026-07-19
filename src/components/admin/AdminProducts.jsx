@@ -11,20 +11,23 @@ function slugify(text) {
     .replace(/(^-|-$)/g, '')
 }
 
+const EMPTY_FORM = {
+  id: null,
+  name: '',
+  description: '',
+  price: '',
+  imageUrl: '',
+  stock: '0',
+  categoryId: '',
+}
+
 export default function AdminProducts() {
   const [products, setProducts] = useState([])
   const [categorias, setCategorias] = useState([])
   const [loading, setLoading] = useState(true)
 
-  // Form de producto
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [price, setPrice] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
-  const [stock, setStock] = useState('0')
-
-  // Selección de categoría
-  const [categoryId, setCategoryId] = useState('')
+  // Form de producto (sirve tanto para crear como para editar)
+  const [form, setForm] = useState(EMPTY_FORM)
   const [creatingCategory, setCreatingCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [newCategoryDesc, setNewCategoryDesc] = useState('')
@@ -32,13 +35,8 @@ export default function AdminProducts() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
 
-  // Mover producto de categoría (por fila)
+  // Mover producto de categoría (por fila, en la lista)
   const [movingProductId, setMovingProductId] = useState(null)
-
-  // Edición rápida de stock (por fila)
-  const [editingStockId, setEditingStockId] = useState(null)
-  const [stockDraft, setStockDraft] = useState('')
-  const [savingStock, setSavingStock] = useState(false)
 
   // Eliminar categoría
   const [deletingCategoryId, setDeletingCategoryId] = useState(null)
@@ -62,24 +60,35 @@ export default function AdminProducts() {
   }, [])
 
   function resetForm() {
-    setName('')
-    setDescription('')
-    setPrice('')
-    setImageUrl('')
-    setStock('0')
-    setCategoryId('')
+    setForm(EMPTY_FORM)
     setCreatingCategory(false)
     setNewCategoryName('')
     setNewCategoryDesc('')
+    setMessage('')
+  }
+
+  function openEdit(product) {
+    setForm({
+      id: product.id,
+      name: product.name,
+      description: product.description || '',
+      price: String(product.price),
+      imageUrl: product.image_url || '',
+      stock: String(product.stock ?? 0),
+      categoryId: product.category_id || '',
+    })
+    setCreatingCategory(false)
+    setMessage('')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!name.trim() || !price) {
+    if (!form.name.trim() || !form.price) {
       setMessage('Falta el nombre o el precio.')
       return
     }
-    if (!creatingCategory && !categoryId) {
+    if (!creatingCategory && !form.categoryId) {
       setMessage('Elegí una categoría o creá una nueva.')
       return
     }
@@ -92,7 +101,7 @@ export default function AdminProducts() {
     setMessage('')
 
     try {
-      let finalCategoryId = categoryId
+      let finalCategoryId = form.categoryId
 
       if (creatingCategory) {
         const { data: existing } = await supabase
@@ -119,15 +128,26 @@ export default function AdminProducts() {
         }
       }
 
-      const { error: prodError } = await supabase.from('products').insert({
-        name: name.trim(),
-        slug: slugify(name),
-        description: description.trim(),
-        price: Number(price),
-        image_url: imageUrl.trim() || null,
-        stock: Math.max(0, Number(stock) || 0),
+      const payload = {
+        name: form.name.trim(),
+        description: form.description.trim(),
+        price: Number(form.price),
+        image_url: form.imageUrl.trim() || null,
+        stock: Math.max(0, Number(form.stock) || 0),
         category_id: finalCategoryId,
-      })
+      }
+
+      let prodError
+      if (form.id) {
+        // Editar producto existente
+        ;({ error: prodError } = await supabase.from('products').update(payload).eq('id', form.id))
+      } else {
+        // Crear producto nuevo
+        ;({ error: prodError } = await supabase.from('products').insert({
+          ...payload,
+          slug: slugify(form.name),
+        }))
+      }
 
       if (prodError) {
         setMessage('No se pudo guardar el producto: ' + prodError.message)
@@ -135,7 +155,7 @@ export default function AdminProducts() {
         return
       }
 
-      setMessage('¡Producto creado con éxito!')
+      setMessage(form.id ? '¡Producto actualizado!' : '¡Producto creado con éxito!')
       resetForm()
       fetchAll()
     } catch (err) {
@@ -145,7 +165,7 @@ export default function AdminProducts() {
     }
   }
 
-  // --- Mover un producto a otra categoría ---
+  // --- Mover un producto a otra categoría (desde la lista) ---
   async function handleMoveProduct(productId, newCategoryId) {
     if (!newCategoryId) return
     setMovingProductId(productId)
@@ -162,36 +182,6 @@ export default function AdminProducts() {
       )
     }
     setMovingProductId(null)
-  }
-
-  // --- Editar stock de un producto ---
-  function startEditStock(product) {
-    setEditingStockId(product.id)
-    setStockDraft(String(product.stock ?? 0))
-  }
-
-  function cancelEditStock() {
-    setEditingStockId(null)
-    setStockDraft('')
-  }
-
-  async function saveStock(productId) {
-    const nuevoStock = Math.max(0, Number(stockDraft) || 0)
-    setSavingStock(true)
-    const { error } = await supabase
-      .from('products')
-      .update({ stock: nuevoStock })
-      .eq('id', productId)
-
-    if (error) {
-      setMessage('No se pudo actualizar el stock: ' + error.message)
-    } else {
-      setProducts((prev) =>
-        prev.map((p) => (p.id === productId ? { ...p, stock: nuevoStock } : p))
-      )
-      cancelEditStock()
-    }
-    setSavingStock(false)
   }
 
   function productCountInCategory(categoryId) {
@@ -236,13 +226,21 @@ export default function AdminProducts() {
         }
       }
 
-      const { error: deleteError } = await supabase
+      const { error: deleteError, count: deletedCount } = await supabase
         .from('categorias')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('id', categoryId)
 
       if (deleteError) {
         setCategoryActionMessage('No se pudo eliminar la categoría: ' + deleteError.message)
+        setCategoryActionBusy(false)
+        return
+      }
+
+      if (!deletedCount) {
+        setCategoryActionMessage(
+          'Supabase no dio error, pero no se borró ninguna fila. Esto suele ser un permiso de RLS faltante para DELETE en la tabla categorias — revisá las políticas.'
+        )
         setCategoryActionBusy(false)
         return
       }
@@ -258,45 +256,66 @@ export default function AdminProducts() {
 
   return (
     <div className="admin-section">
-      <h2>Nuevo producto</h2>
+      <h2>{form.id ? 'Editar producto' : 'Nuevo producto'}</h2>
       <form className="admin-form" onSubmit={handleSubmit}>
         <label>
           Nombre
-          <input value={name} onChange={(e) => setName(e.target.value)} required />
+          <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
         </label>
 
         <label>
           Descripción
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+          <textarea
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            rows={3}
+          />
         </label>
 
         <label>
           Precio
-          <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required min="0" step="0.01" />
+          <input
+            type="number"
+            value={form.price}
+            onChange={(e) => setForm({ ...form, price: e.target.value })}
+            required
+            min="0"
+            step="0.01"
+          />
         </label>
 
         <label>
           URL de la imagen
-          <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." />
+          <input
+            value={form.imageUrl}
+            onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+            placeholder="https://..."
+          />
         </label>
 
         <label>
           Stock (unidades disponibles)
-          <input type="number" value={stock} onChange={(e) => setStock(e.target.value)} min="0" step="1" />
+          <input
+            type="number"
+            value={form.stock}
+            onChange={(e) => setForm({ ...form, stock: e.target.value })}
+            min="0"
+            step="1"
+          />
         </label>
 
         <div className="admin-form__categoria">
           <label>
             Categoría
             <select
-              value={creatingCategory ? '__nueva__' : categoryId}
+              value={creatingCategory ? '__nueva__' : form.categoryId}
               onChange={(e) => {
                 if (e.target.value === '__nueva__') {
                   setCreatingCategory(true)
-                  setCategoryId('')
+                  setForm({ ...form, categoryId: '' })
                 } else {
                   setCreatingCategory(false)
-                  setCategoryId(e.target.value)
+                  setForm({ ...form, categoryId: e.target.value })
                 }
               }}
             >
@@ -332,9 +351,16 @@ export default function AdminProducts() {
           )}
         </div>
 
-        <button type="submit" className="btn" disabled={saving}>
-          {saving ? 'Guardando…' : 'Crear producto'}
-        </button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button type="submit" className="btn" disabled={saving}>
+            {saving ? 'Guardando…' : form.id ? 'Guardar cambios' : 'Crear producto'}
+          </button>
+          {form.id && (
+            <button type="button" className="btn" disabled={saving} onClick={resetForm}>
+              Cancelar edición
+            </button>
+          )}
+        </div>
 
         {message && <p className="admin-form__mensaje">{message}</p>}
       </form>
@@ -346,41 +372,20 @@ export default function AdminProducts() {
       <ul className="admin-list">
         {products.map((p) => {
           const cat = categorias.find((c) => c.id === p.category_id)
-          const isEditingStock = editingStockId === p.id
-
           return (
             <li key={p.id} className="admin-list__item">
               <strong>{p.name}</strong> — ${p.price}
+              <span className="label-mono"> · stock: {p.stock ?? 0}</span>
               {cat && <span className="label-mono"> · {cat.nombre}</span>}
 
-              {!isEditingStock ? (
-                <button
-                  type="button"
-                  className="label-mono"
-                  style={{ marginLeft: 12, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-                  onClick={() => startEditStock(p)}
-                  title="Editar stock"
-                >
-                  stock: {p.stock ?? 0}
-                </button>
-              ) : (
-                <span style={{ marginLeft: 12 }}>
-                  <input
-                    type="number"
-                    min="0"
-                    value={stockDraft}
-                    onChange={(e) => setStockDraft(e.target.value)}
-                    style={{ width: '60px' }}
-                    disabled={savingStock}
-                  />
-                  <button type="button" className="btn" disabled={savingStock} onClick={() => saveStock(p.id)}>
-                    {savingStock ? '…' : 'Guardar'}
-                  </button>
-                  <button type="button" className="btn" disabled={savingStock} onClick={cancelEditStock}>
-                    Cancelar
-                  </button>
-                </span>
-              )}
+              <button
+                type="button"
+                className="btn"
+                style={{ marginLeft: 12 }}
+                onClick={() => openEdit(p)}
+              >
+                Editar
+              </button>
 
               <select
                 value={p.category_id || ''}
@@ -469,4 +474,3 @@ export default function AdminProducts() {
     </div>
   )
 }
-
