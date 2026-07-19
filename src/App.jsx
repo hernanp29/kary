@@ -8,6 +8,7 @@ import Tienda from './pages/Tienda'
 import Talleres from './pages/Talleres'
 import Login from './pages/Login'
 import Admin from './pages/Admin'
+import PublicacionDetalle from './pages/PublicacionDetalle'
 
 export default function App() {
   return (
