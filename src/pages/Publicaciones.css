@@ -119,3 +119,16 @@
   color: var(--dorado-claro);
   margin: 40px 0 18px;
 }
+
+/* Agregar esto al final de src/pages/Publicaciones.css */
+
+.post-card__fecha {
+  display: block;
+  margin-top: 10px;
+  opacity: 0.6;
+}
+
+.post-detalle__fecha {
+  opacity: 0.6;
+  margin: 4px 0 20px;
+}
