@@ -190,7 +190,17 @@ export default function Tienda() {
               textAlign: 'center',
             }}
           >
-            <span className="label-mono">${p.price}</span>
+            <span
+              className="label-mono"
+              style={{
+                fontSize: '1.4rem',
+                fontWeight: 700,
+                letterSpacing: '0.03em',
+                color: 'var(--dorado-claro, #B7924A)',
+              }}
+            >
+              ${p.price}
+            </span>
 
             {!agotado ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
