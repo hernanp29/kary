@@ -3,13 +3,6 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import './Home.css'
 
-const POPULARES = [
-  { img: 'https://d1yei2z3i6k35z.cloudfront.net/161/62a985f6df449_magic-mind-KqyZo6r1Z34-unsplash.jpg', label: 'Jugos orgánicos' },
-  { img: 'https://d1yei2z3i6k35z.cloudfront.net/161/62a986bef0898_magic-mind-MjzsWqkkShI-unsplash.jpg', label: 'Shots revitalizantes' },
-  { img: 'https://d1yei2z3i6k35z.cloudfront.net/161/62a986c53e5cd_magic-mind-R8AQe2XwzPc-unsplash.jpg', label: 'Productos de abejas' },
-  { img: 'https://d1yei2z3i6k35z.cloudfront.net/161/62a986ccd7181_magic-mind-teFigICGOwY-unsplash.jpg', label: 'Espirulina' },
-]
-
 const INSTA_IMAGES = [
   'https://d1yei2z3i6k35z.cloudfront.net/18220893/6a4d71a22a9e82.27004821_ritual1.jpeg',
   'https://d1yei2z3i6k35z.cloudfront.net/18220893/6a4d6fefcffdf1.74658003_fotoperfil.jpeg',
@@ -154,18 +147,6 @@ export default function Home() {
         <SubscribeForm />
       </section>
 
-      <section>
-        <div className="section-title">Más popular</div>
-        <div className="populares-grid">
-          {POPULARES.map((p) => (
-            <div className="card-pop" key={p.label}>
-              <img src={p.img} alt={p.label} />
-              <div className="etiqueta">{p.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
       <section id="blog">
         <div className="blog-header">
           <div className="section-title">Últimas publicaciones de blog</div>
@@ -207,3 +188,4 @@ export default function Home() {
     </div>
   )
 }
+
