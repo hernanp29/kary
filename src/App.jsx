@@ -17,6 +17,7 @@ export default function App() {
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/publicaciones/:slug" element={<PublicacionDetalle />} />
           <Route path="/publicaciones" element={<Publicaciones />} />
           <Route path="/tienda" element={<Tienda />} />
           <Route path="/talleres" element={<Talleres />} />
