@@ -10,7 +10,7 @@ export default function SiteHeader() {
       <header>
         <div className="wrap">
           <Link to="/" className="header-logo">
-            <img src="https://i.ibb.co/KcGmwYzd/Gemini-Generated-Image-6w06pq6w06pq6w06.png" alt="Karina de la Lama" />
+            <img src="https://i.ibb.co/SXg912jY/triqueta-verde-transparente.png" alt="Karina de la Lama" />
           </Link>
           <div className="brand-name">KARINA</div>
           <span className="brand-tag">— arte &amp; magia —</span>
