@@ -179,7 +179,17 @@ export default function Tienda() {
         <div className="product-card__body">
           <h3>{p.name}</h3>
           <p>{p.description}</p>
-          <div className="product-card__footer" style={{ flexWrap: 'wrap', gap: '10px' }}>
+          <div
+            className="product-card__footer"
+            style={{
+              flexWrap: 'wrap',
+              gap: '10px',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center',
+            }}
+          >
             <span className="label-mono">${p.price}</span>
 
             {!agotado ? (
