@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import './Publicaciones.css'
 
@@ -15,7 +16,6 @@ export default function Publicaciones() {
         .select('id, title, slug, excerpt, category, cover_image_url, published_at')
         .eq('published', true)
         .order('published_at', { ascending: false })
-
       if (!error) setPosts(data || [])
       setLoading(false)
     }
@@ -54,14 +54,14 @@ export default function Publicaciones() {
 
       <div className="publicaciones__grid">
         {visible.map((post) => (
-          <article key={post.id} className="post-card">
+          <Link key={post.id} to={`/publicaciones/${post.slug}`} className="post-card">
             {post.cover_image_url && (
               <img src={post.cover_image_url} alt="" className="post-card__image" />
             )}
             <span className="label-mono">{post.category}</span>
             <h3>{post.title}</h3>
             <p>{post.excerpt}</p>
-          </article>
+          </Link>
         ))}
       </div>
     </div>
