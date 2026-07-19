@@ -32,6 +32,15 @@ export default function AdminProducts() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
 
+  // Mover producto de categoría (por fila)
+  const [movingProductId, setMovingProductId] = useState(null)
+
+  // Eliminar categoría
+  const [deletingCategoryId, setDeletingCategoryId] = useState(null)
+  const [reassignTarget, setReassignTarget] = useState('')
+  const [categoryActionMessage, setCategoryActionMessage] = useState('')
+  const [categoryActionBusy, setCategoryActionBusy] = useState(false)
+
   async function fetchAll() {
     setLoading(true)
     const [{ data: prods }, { data: cats }] = await Promise.all([
@@ -80,20 +89,30 @@ export default function AdminProducts() {
     try {
       let finalCategoryId = categoryId
 
-      // Si el admin eligió crear una categoría nueva, la creamos primero
       if (creatingCategory) {
-        const { data: catData, error: catError } = await supabase
+        // Si ya existe una categoría con ese nombre, la reutilizamos en vez de fallar
+        const { data: existing } = await supabase
           .from('categorias')
-          .insert({ nombre: newCategoryName.trim(), descripcion: newCategoryDesc.trim() })
-          .select()
-          .single()
+          .select('id')
+          .ilike('nombre', newCategoryName.trim())
+          .maybeSingle()
 
-        if (catError) {
-          setMessage('No se pudo crear la categoría: ' + catError.message)
-          setSaving(false)
-          return
+        if (existing) {
+          finalCategoryId = existing.id
+        } else {
+          const { data: catData, error: catError } = await supabase
+            .from('categorias')
+            .insert({ nombre: newCategoryName.trim(), descripcion: newCategoryDesc.trim() })
+            .select()
+            .single()
+
+          if (catError) {
+            setMessage('No se pudo crear la categoría: ' + catError.message)
+            setSaving(false)
+            return
+          }
+          finalCategoryId = catData.id
         }
-        finalCategoryId = catData.id
       }
 
       const { error: prodError } = await supabase.from('products').insert({
@@ -119,6 +138,88 @@ export default function AdminProducts() {
       setMessage('Algo salió mal: ' + err.message)
     } finally {
       setSaving(false)
+    }
+  }
+
+  // --- Mover un producto a otra categoría ---
+  async function handleMoveProduct(productId, newCategoryId) {
+    if (!newCategoryId) return
+    setMovingProductId(productId)
+    const { error } = await supabase
+      .from('products')
+      .update({ category_id: newCategoryId })
+      .eq('id', productId)
+
+    if (error) {
+      setMessage('No se pudo mover el producto: ' + error.message)
+    } else {
+      setProducts((prev) =>
+        prev.map((p) => (p.id === productId ? { ...p, category_id: newCategoryId } : p))
+      )
+    }
+    setMovingProductId(null)
+  }
+
+  function productCountInCategory(categoryId) {
+    return products.filter((p) => p.category_id === categoryId).length
+  }
+
+  // --- Eliminar categoría ---
+  function startDeleteCategory(categoryId) {
+    setDeletingCategoryId(categoryId)
+    setReassignTarget('')
+    setCategoryActionMessage('')
+  }
+
+  function cancelDeleteCategory() {
+    setDeletingCategoryId(null)
+    setReassignTarget('')
+    setCategoryActionMessage('')
+  }
+
+  async function confirmDeleteCategory(categoryId) {
+    const count = productCountInCategory(categoryId)
+
+    if (count > 0 && !reassignTarget) {
+      setCategoryActionMessage('Esta categoría tiene productos. Elegí a dónde moverlos antes de borrar.')
+      return
+    }
+
+    setCategoryActionBusy(true)
+    setCategoryActionMessage('')
+
+    try {
+      // Si tiene productos, primero los reasignamos a la categoría elegida
+      if (count > 0) {
+        const { error: moveError } = await supabase
+          .from('products')
+          .update({ category_id: reassignTarget })
+          .eq('category_id', categoryId)
+
+        if (moveError) {
+          setCategoryActionMessage('No se pudieron mover los productos: ' + moveError.message)
+          setCategoryActionBusy(false)
+          return
+        }
+      }
+
+      const { error: deleteError } = await supabase
+        .from('categorias')
+        .delete()
+        .eq('id', categoryId)
+
+      if (deleteError) {
+        setCategoryActionMessage('No se pudo eliminar la categoría: ' + deleteError.message)
+        setCategoryActionBusy(false)
+        return
+      }
+
+      cancelDeleteCategory()
+      fetchAll()
+    } catch (err) {
+      setCategoryActionMessage('Algo salió mal: ' + err.message)
+    } finally {
+      setCategoryActionBusy(false)
     }
   }
 
@@ -219,6 +320,89 @@ export default function AdminProducts() {
             <li key={p.id} className="admin-list__item">
               <strong>{p.name}</strong> — ${p.price} — {p.status}
               {cat && <span className="label-mono"> · {cat.nombre}</span>}
+
+              <select
+                value={p.category_id || ''}
+                disabled={movingProductId === p.id}
+                onChange={(e) => handleMoveProduct(p.id, e.target.value)}
+                style={{ marginLeft: 12 }}
+                title="Mover a otra categoría"
+              >
+                <option value="" disabled>Mover a…</option>
+                {categorias.map((c) => (
+                  <option key={c.id} value={c.id} disabled={c.id === p.category_id}>
+                    {c.nombre}
+                  </option>
+                ))}
+              </select>
+            </li>
+          )
+        })}
+      </ul>
+
+      <h2>Categorías</h2>
+      <ul className="admin-list">
+        {categorias.map((c) => {
+          const count = productCountInCategory(c.id)
+          const isDeleting = deletingCategoryId === c.id
+
+          return (
+            <li key={c.id} className="admin-list__item">
+              <strong>{c.nombre}</strong>
+              <span className="label-mono"> · {count} producto{count === 1 ? '' : 's'}</span>
+
+              {!isDeleting && (
+                <button
+                  type="button"
+                  className="btn"
+                  style={{ marginLeft: 12 }}
+                  onClick={() => startDeleteCategory(c.id)}
+                >
+                  Eliminar
+                </button>
+              )}
+
+              {isDeleting && (
+                <div style={{ marginTop: 8 }}>
+                  {count > 0 && (
+                    <>
+                      <label>
+                        Mover sus {count} producto{count === 1 ? '' : 's'} a
+                        <select
+                          value={reassignTarget}
+                          onChange={(e) => setReassignTarget(e.target.value)}
+                          style={{ marginLeft: 8 }}
+                        >
+                          <option value="">Elegí una categoría destino…</option>
+                          {categorias
+                            .filter((other) => other.id !== c.id)
+                            .map((other) => (
+                              <option key={other.id} value={other.id}>{other.nombre}</option>
+                            ))}
+                        </select>
+                      </label>
+                    </>
+                  )}
+
+                  <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+                    <button
+                      type="button"
+                      className="btn"
+                      disabled={categoryActionBusy}
+                      onClick={() => confirmDeleteCategory(c.id)}
+                    >
+                      {categoryActionBusy ? 'Eliminando…' : count > 0 ? 'Mover y eliminar' : 'Confirmar eliminación'}
+                    </button>
+                    <button type="button" className="btn" disabled={categoryActionBusy} onClick={cancelDeleteCategory}>
+                      Cancelar
+                    </button>
+                  </div>
+
+                  {categoryActionMessage && (
+                    <p className="admin-form__mensaje">{categoryActionMessage}</p>
+                  )}
+                </div>
+              )}
             </li>
           )
         })}
@@ -226,3 +410,4 @@ export default function AdminProducts() {
     </div>
   )
 }
+
