@@ -59,3 +59,8 @@
   color: var(--moss);
   cursor: not-allowed;
 }
+
+.tienda__categoria { margin-bottom: 48px; }
+.tienda__categoria-header { margin-bottom: 22px; }
+.tienda__categoria-header h2 { font-size: 1.4rem; color: var(--leaf-deep); margin-bottom: 6px; }
+.tienda__categoria-desc { color: var(--moss); max-width: 640px; }
