@@ -366,111 +366,133 @@ export default function AdminProducts() {
       </form>
 
       <h2>Productos cargados</h2>
-      {loading && <p className="label-mono">Cargando…</p>}
-      {!loading && products.length === 0 && <p>Todavía no hay productos.</p>}
+      {loading && <p className="admin-empty">Cargando…</p>}
+      {!loading && products.length === 0 && <p className="admin-empty">Todavía no hay productos.</p>}
 
-      <ul className="admin-list">
-        {products.map((p) => {
-          const cat = categorias.find((c) => c.id === p.category_id)
-          return (
-            <li key={p.id} className="admin-list__item">
-              <strong>{p.name}</strong> — ${p.price}
-              <span className="label-mono"> · stock: {p.stock ?? 0}</span>
-              {cat && <span className="label-mono"> · {cat.nombre}</span>}
-
-              <button
-                type="button"
-                className="btn"
-                style={{ marginLeft: 12 }}
-                onClick={() => openEdit(p)}
-              >
-                Editar
-              </button>
-
-              <select
-                value={p.category_id || ''}
-                disabled={movingProductId === p.id}
-                onChange={(e) => handleMoveProduct(p.id, e.target.value)}
-                style={{ marginLeft: 12 }}
-                title="Mover a otra categoría"
-              >
-                <option value="" disabled>Mover a…</option>
-                {categorias.map((c) => (
-                  <option key={c.id} value={c.id} disabled={c.id === p.category_id}>
-                    {c.nombre}
-                  </option>
-                ))}
-              </select>
-            </li>
-          )
-        })}
-      </ul>
+      {!loading && products.length > 0 && (
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Precio</th>
+              <th>Stock</th>
+              <th>Categoría</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((p) => {
+              const cat = categorias.find((c) => c.id === p.category_id)
+              return (
+                <tr key={p.id}>
+                  <td>{p.name}</td>
+                  <td>${p.price}</td>
+                  <td>{p.stock ?? 0}</td>
+                  <td>
+                    <select
+                      value={p.category_id || ''}
+                      disabled={movingProductId === p.id}
+                      onChange={(e) => handleMoveProduct(p.id, e.target.value)}
+                      title="Mover a otra categoría"
+                    >
+                      <option value="" disabled>{cat ? cat.nombre : 'Sin categoría'}</option>
+                      {categorias.map((c) => (
+                        <option key={c.id} value={c.id} disabled={c.id === p.category_id}>
+                          {c.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="admin-table__actions">
+                    <button type="button" className="btn-secondary" onClick={() => openEdit(p)}>
+                      Editar
+                    </button>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      )}
 
       <h2>Categorías</h2>
-      <ul className="admin-list">
-        {categorias.map((c) => {
-          const count = productCountInCategory(c.id)
-          const isDeleting = deletingCategoryId === c.id
+      {categorias.length === 0 && <p className="admin-empty">Todavía no hay categorías.</p>}
 
-          return (
-            <li key={c.id} className="admin-list__item">
-              <strong>{c.nombre}</strong>
-              <span className="label-mono"> · {count} producto{count === 1 ? '' : 's'}</span>
+      {categorias.length > 0 && (
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Productos</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {categorias.map((c) => {
+              const count = productCountInCategory(c.id)
+              const isDeleting = deletingCategoryId === c.id
 
-              {!isDeleting && (
-                <button
-                  type="button"
-                  className="btn"
-                  style={{ marginLeft: 12 }}
-                  onClick={() => startDeleteCategory(c.id)}
-                >
-                  Eliminar
-                </button>
-              )}
-
-              {isDeleting && (
-                <div style={{ marginTop: 8 }}>
-                  {count > 0 && (
-                    <label>
-                      Mover sus {count} producto{count === 1 ? '' : 's'} a
-                      <select
-                        value={reassignTarget}
-                        onChange={(e) => setReassignTarget(e.target.value)}
-                        style={{ marginLeft: 8 }}
+              return (
+                <tr key={c.id}>
+                  <td>{c.nombre}</td>
+                  <td>{count}</td>
+                  <td className="admin-table__actions">
+                    {!isDeleting && (
+                      <button
+                        type="button"
+                        className="btn-danger"
+                        onClick={() => startDeleteCategory(c.id)}
                       >
-                        <option value="">Elegí una categoría destino…</option>
-                        {categorias
-                          .filter((other) => other.id !== c.id)
-                          .map((other) => (
-                            <option key={other.id} value={other.id}>{other.nombre}</option>
-                          ))}
-                      </select>
-                    </label>
-                  )}
+                        Eliminar
+                      </button>
+                    )}
 
-                  <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-                    <button
-                      type="button"
-                      className="btn"
-                      disabled={categoryActionBusy}
-                      onClick={() => confirmDeleteCategory(c.id)}
-                    >
-                      {categoryActionBusy ? 'Eliminando…' : count > 0 ? 'Mover y eliminar' : 'Confirmar eliminación'}
-                    </button>
-                    <button type="button" className="btn" disabled={categoryActionBusy} onClick={cancelDeleteCategory}>
-                      Cancelar
-                    </button>
-                  </div>
+                    {isDeleting && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start' }}>
+                        {count > 0 && (
+                          <label>
+                            Mover sus {count} producto{count === 1 ? '' : 's'} a
+                            <select
+                              value={reassignTarget}
+                              onChange={(e) => setReassignTarget(e.target.value)}
+                              style={{ marginLeft: 8 }}
+                            >
+                              <option value="">Elegí una categoría destino…</option>
+                              {categorias
+                                .filter((other) => other.id !== c.id)
+                                .map((other) => (
+                                  <option key={other.id} value={other.id}>{other.nombre}</option>
+                                ))}
+                            </select>
+                          </label>
+                        )}
 
-                  {categoryActionMessage && (
-                    <p className="admin-form__mensaje">{categoryActionMessage}</p>
-                  )}
-                </div>
-              )}
-            </li>
-          )
-        })}
-      </ul>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button
+                            type="button"
+                            className="btn-primary"
+                            disabled={categoryActionBusy}
+                            onClick={() => confirmDeleteCategory(c.id)}
+                          >
+                            {categoryActionBusy ? 'Eliminando…' : count > 0 ? 'Mover y eliminar' : 'Confirmar eliminación'}
+                          </button>
+                          <button type="button" className="btn-secondary" disabled={categoryActionBusy} onClick={cancelDeleteCategory}>
+                            Cancelar
+                          </button>
+                        </div>
+
+                        {categoryActionMessage && (
+                          <p className="admin-error">{categoryActionMessage}</p>
+                        )}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      )}
     </div>
   )
 }
