@@ -64,3 +64,48 @@
 .tienda__categoria-header { margin-bottom: 22px; }
 .tienda__categoria-header h2 { font-size: 1.4rem; color: var(--leaf-deep); margin-bottom: 6px; }
 .tienda__categoria-desc { color: var(--moss); max-width: 640px; }
+
+.bienvenida {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+  padding: 70px 24px;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.bienvenida__imagen {
+  flex: 1 1 380px;
+  max-width: 420px;
+}
+
+.bienvenida__imagen img {
+  width: 100%;
+  border-radius: var(--radius, 8px);
+  object-fit: cover;
+}
+
+.bienvenida__texto {
+  flex: 1 1 480px;
+}
+
+.bienvenida__texto p {
+  margin-bottom: 16px;
+  opacity: 0.9;
+}
+
+.bienvenida__firma {
+  margin-top: 24px;
+  font-style: italic;
+  opacity: 0.85;
+}
+
+@media (max-width: 800px) {
+  .bienvenida {
+    flex-direction: column;
+    padding: 50px 20px;
+  }
+  .bienvenida__imagen {
+    max-width: 100%;
+  }
+}
