@@ -1,212 +1,228 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
-const EMPTY_FORM = {
-  id: null,
-  name: '',
-  slug: '',
-  description: '',
-  price: '',
-  image_url: '',
-  status: 'disponible',
+function slugify(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // saca acentos
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
 }
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([])
+  const [categorias, setCategorias] = useState([])
   const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState(EMPTY_FORM)
-  const [error, setError] = useState('')
-  const [saving, setSaving] = useState(false)
 
-  async function fetchProducts() {
+  // Form de producto
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [price, setPrice] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
+  const [status, setStatus] = useState('disponible')
+
+  // Selección de categoría
+  const [categoryId, setCategoryId] = useState('')
+  const [creatingCategory, setCreatingCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [newCategoryDesc, setNewCategoryDesc] = useState('')
+
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
+
+  async function fetchAll() {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false })
-    if (!error) setProducts(data || [])
+    const [{ data: prods }, { data: cats }] = await Promise.all([
+      supabase.from('products').select('id, name, slug, description, price, image_url, status, category_id').order('created_at', { ascending: false }),
+      supabase.from('categorias').select('id, nombre, descripcion').order('nombre'),
+    ])
+    setProducts(prods || [])
+    setCategorias(cats || [])
     setLoading(false)
   }
 
-  useEffect(() => { fetchProducts() }, [])
+  useEffect(() => {
+    fetchAll()
+  }, [])
 
-  function slugify(text) {
-    return text
-      .toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-  }
-
-  function openNew() {
-    setForm(EMPTY_FORM)
-    setError('')
-    setShowForm(true)
-  }
-
-  function openEdit(product) {
-    setForm({ ...product, price: String(product.price) })
-    setError('')
-    setShowForm(true)
+  function resetForm() {
+    setName('')
+    setDescription('')
+    setPrice('')
+    setImageUrl('')
+    setStatus('disponible')
+    setCategoryId('')
+    setCreatingCategory(false)
+    setNewCategoryName('')
+    setNewCategoryDesc('')
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
-    setError('')
-
-    const priceNum = Number(form.price)
-    if (Number.isNaN(priceNum) || priceNum < 0) {
-      setError('El precio tiene que ser un número válido.')
+    if (!name.trim() || !price) {
+      setMessage('Falta el nombre o el precio.')
+      return
+    }
+    if (!creatingCategory && !categoryId) {
+      setMessage('Elegí una categoría o creá una nueva.')
+      return
+    }
+    if (creatingCategory && !newCategoryName.trim()) {
+      setMessage('Ponele un nombre a la nueva categoría.')
       return
     }
 
     setSaving(true)
+    setMessage('')
 
-    const payload = {
-      name: form.name,
-      slug: form.slug || slugify(form.name),
-      description: form.description,
-      price: priceNum,
-      image_url: form.image_url,
-      status: form.status,
+    try {
+      let finalCategoryId = categoryId
+
+      // Si el admin eligió crear una categoría nueva, la creamos primero
+      if (creatingCategory) {
+        const { data: catData, error: catError } = await supabase
+          .from('categorias')
+          .insert({ nombre: newCategoryName.trim(), descripcion: newCategoryDesc.trim() })
+          .select()
+          .single()
+
+        if (catError) {
+          setMessage('No se pudo crear la categoría: ' + catError.message)
+          setSaving(false)
+          return
+        }
+        finalCategoryId = catData.id
+      }
+
+      const { error: prodError } = await supabase.from('products').insert({
+        name: name.trim(),
+        slug: slugify(name),
+        description: description.trim(),
+        price: Number(price),
+        image_url: imageUrl.trim() || null,
+        status,
+        category_id: finalCategoryId,
+      })
+
+      if (prodError) {
+        setMessage('No se pudo guardar el producto: ' + prodError.message)
+        setSaving(false)
+        return
+      }
+
+      setMessage('¡Producto creado con éxito!')
+      resetForm()
+      fetchAll()
+    } catch (err) {
+      setMessage('Algo salió mal: ' + err.message)
+    } finally {
+      setSaving(false)
     }
-
-    const query = form.id
-      ? supabase.from('products').update(payload).eq('id', form.id)
-      : supabase.from('products').insert(payload)
-
-    const { error } = await query
-    setSaving(false)
-
-    if (error) {
-      setError(error.message.includes('duplicate') ? 'Ya existe un producto con ese slug.' : error.message)
-      return
-    }
-
-    setShowForm(false)
-    fetchProducts()
-  }
-
-  async function handleDelete(id) {
-    if (!confirm('¿Borrar este producto? No se puede deshacer.')) return
-    await supabase.from('products').delete().eq('id', id)
-    fetchProducts()
   }
 
   return (
-    <div>
-      <div className="admin-panel__header">
-        <h2>Tienda</h2>
-        {!showForm && <button className="btn-primary" onClick={openNew}>+ Nuevo producto</button>}
-      </div>
+    <div className="admin-section">
+      <h2>Nuevo producto</h2>
+      <form className="admin-form" onSubmit={handleSubmit}>
+        <label>
+          Nombre
+          <input value={name} onChange={(e) => setName(e.target.value)} required />
+        </label>
 
-      {showForm && (
-        <form className="admin-form" onSubmit={handleSubmit}>
+        <label>
+          Descripción
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+        </label>
+
+        <label>
+          Precio
+          <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required min="0" step="0.01" />
+        </label>
+
+        <label>
+          URL de la imagen
+          <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." />
+        </label>
+
+        <label>
+          Estado
+          <select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="disponible">Disponible</option>
+            <option value="agotado">Agotado</option>
+          </select>
+        </label>
+
+        <div className="admin-form__categoria">
           <label>
-            Nombre
-            <input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              required
-            />
+            Categoría
+            <select
+              value={creatingCategory ? '__nueva__' : categoryId}
+              onChange={(e) => {
+                if (e.target.value === '__nueva__') {
+                  setCreatingCategory(true)
+                  setCategoryId('')
+                } else {
+                  setCreatingCategory(false)
+                  setCategoryId(e.target.value)
+                }
+              }}
+            >
+              <option value="">Elegí una categoría…</option>
+              {categorias.map((c) => (
+                <option key={c.id} value={c.id}>{c.nombre}</option>
+              ))}
+              <option value="__nueva__">+ Crear nueva categoría</option>
+            </select>
           </label>
 
-          <label>
-            Slug (URL, se genera solo si lo dejás vacío)
-            <input
-              value={form.slug}
-              onChange={(e) => setForm({ ...form, slug: e.target.value })}
-              placeholder="tintura-de-caléndula"
-            />
-          </label>
+          {creatingCategory && (
+            <div className="admin-form__nueva-categoria">
+              <label>
+                Nombre de la categoría nueva
+                <input
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="ej: Jabones artesanales"
+                  required
+                />
+              </label>
+              <label>
+                Descripción de la categoría
+                <textarea
+                  value={newCategoryDesc}
+                  onChange={(e) => setNewCategoryDesc(e.target.value)}
+                  rows={2}
+                  placeholder="Un texto corto que se va a mostrar arriba de estos productos en la Tienda"
+                />
+              </label>
+            </div>
+          )}
+        </div>
 
-          <label>
-            Descripción
-            <textarea
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-            />
-          </label>
+        <button type="submit" className="btn" disabled={saving}>
+          {saving ? 'Guardando…' : 'Crear producto'}
+        </button>
 
-          <div className="admin-form__row">
-            <label>
-              Precio
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.price}
-                onChange={(e) => setForm({ ...form, price: e.target.value })}
-                required
-              />
-            </label>
+        {message && <p className="admin-form__mensaje">{message}</p>}
+      </form>
 
-            <label>
-              Estado
-              <select
-                value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value })}
-              >
-                <option value="disponible">Disponible</option>
-                <option value="agotado">Agotado</option>
-              </select>
-            </label>
-          </div>
+      <h2>Productos cargados</h2>
+      {loading && <p className="label-mono">Cargando…</p>}
+      {!loading && products.length === 0 && <p>Todavía no hay productos.</p>}
 
-          <label>
-            URL de imagen
-            <input
-              value={form.image_url}
-              onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-              placeholder="https://…"
-            />
-          </label>
-
-          {error && <p className="admin-error">{error}</p>}
-
-          <div className="admin-form__actions">
-            <button type="submit" className="btn-primary" disabled={saving}>
-              {saving ? 'Guardando…' : 'Guardar'}
-            </button>
-            <button type="button" className="btn-secondary" onClick={() => setShowForm(false)}>
-              Cancelar
-            </button>
-          </div>
-        </form>
-      )}
-
-      {loading && <p className="admin-empty">Cargando…</p>}
-
-      {!loading && products.length === 0 && (
-        <p className="admin-empty">Todavía no hay productos cargados.</p>
-      )}
-
-      {!loading && products.length > 0 && (
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Precio</th>
-              <th>Estado</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((p) => (
-              <tr key={p.id}>
-                <td>{p.name}</td>
-                <td>${Number(p.price).toFixed(2)}</td>
-                <td>{p.status}</td>
-                <td className="admin-table__actions">
-                  <button className="btn-secondary" onClick={() => openEdit(p)}>Editar</button>
-                  <button className="btn-danger" onClick={() => handleDelete(p.id)}>Borrar</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <ul className="admin-list">
+        {products.map((p) => {
+          const cat = categorias.find((c) => c.id === p.category_id)
+          return (
+            <li key={p.id} className="admin-list__item">
+              <strong>{p.name}</strong> — ${p.price} — {p.status}
+              {cat && <span className="label-mono"> · {cat.nombre}</span>}
+            </li>
+          )
+        })}
+      </ul>
     </div>
   )
 }
