@@ -76,3 +76,22 @@
 .publicacion-detalle h1 {
   margin-top: 10px;
 }
+.post-detalle__contenido {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.post-detalle__contenido p {
+  margin-bottom: 18px;
+  line-height: 1.75;
+  color: var(--hueso);
+  opacity: 0.9;
+}
+
+.post-detalle__subtitulo {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-style: italic;
+  color: var(--dorado-claro);
+  margin: 40px 0 18px;
+}
