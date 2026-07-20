@@ -31,8 +31,7 @@ export default function Talleres() {
 
       {!loading && workshops.length === 0 && (
         <p className="talleres__empty">
-          Todavía no hay talleres cargados. Agregá el primero desde el panel de admin,
-          con su modalidad, fecha y cupo si es presencial.
+          Todavía no hay talleres cargados.
         </p>
       )}
 
