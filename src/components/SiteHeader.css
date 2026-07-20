@@ -209,6 +209,14 @@ nav a.is-active::after {
 
 /* Mobile: el submenú se despliega inline apenas se toca "Tienda", anidado en el acordeón */
 @media (max-width: 640px) {
+  /* El link "Tienda" queda dentro de un div wrapper (para el submenú), no es hijo
+     directo del <nav> flex, así que no se estira solo: hay que forzarlo a bloque
+     completo para que quede igual que Inicio, Blog, Talleres, etc. */
+  .nav-item--dropdown > a {
+    display: block;
+    width: 100%;
+  }
+
   .nav-item--dropdown__menu {
     max-height: 0;
     overflow: hidden;
