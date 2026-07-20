@@ -22,8 +22,10 @@ function leerArchivoComoBase64(file) {
 }
 
 export default function AdminNewsletter() {
+  const [suscriptores, setSuscriptores] = useState([])
   const [totalSuscriptores, setTotalSuscriptores] = useState(null)
   const [loadingCount, setLoadingCount] = useState(true)
+  const [errorLista, setErrorLista] = useState('')
 
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
@@ -47,13 +49,20 @@ export default function AdminNewsletter() {
 
   async function fetchCount() {
     setLoadingCount(true)
+    setErrorLista('')
     try {
       const headers = await authHeader()
       const res = await fetch('/api/suscriptores-admin', { headers })
       const data = await res.json()
-      if (res.ok) setTotalSuscriptores(data.total)
+      if (res.ok) {
+        setTotalSuscriptores(data.total)
+        setSuscriptores(data.suscriptores || [])
+      } else {
+        setErrorLista(data.error || 'No se pudo cargar la lista de suscriptores.')
+      }
     } catch (err) {
       console.error(err)
+      setErrorLista('No se pudo cargar la lista de suscriptores.')
     }
     setLoadingCount(false)
   }
@@ -122,6 +131,33 @@ export default function AdminNewsletter() {
       <p className="label-mono">
         {loadingCount ? 'Cargando…' : `${totalSuscriptores ?? 0} suscriptor${totalSuscriptores === 1 ? '' : 'es'} registrado${totalSuscriptores === 1 ? '' : 's'}`}
       </p>
+
+      {errorLista && <p className="admin-error">{errorLista}</p>}
+
+      {!loadingCount && suscriptores.length > 0 && (
+        <table className="admin-table" style={{ marginBottom: '2rem' }}>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Suscripto el</th>
+            </tr>
+          </thead>
+          <tbody>
+            {suscriptores.map((s) => (
+              <tr key={s.email}>
+                <td>{s.full_name || '—'}</td>
+                <td>{s.email}</td>
+                <td>{s.created_at ? new Date(s.created_at).toLocaleDateString('es-AR') : '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {!loadingCount && suscriptores.length === 0 && !errorLista && (
+        <p className="admin-empty">Todavía no hay suscriptores.</p>
+      )}
 
       <form
         className="admin-form"
