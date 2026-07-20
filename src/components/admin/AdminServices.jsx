@@ -121,6 +121,7 @@ export default function AdminServices() {
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               rows={4}
               required
+              placeholder={'Usá "## " al inicio de una línea para un subtítulo, y una línea vacía para separar párrafos — igual que en el blog.'}
             />
           </label>
 
@@ -200,3 +201,4 @@ export default function AdminServices() {
     </div>
   )
 }
+
