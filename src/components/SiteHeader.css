@@ -59,6 +59,32 @@ header {
   text-transform: uppercase;
   margin-top: 6px;
 }
+
+/* Botón hamburguesa: oculto en desktop, visible y a un costado en mobile */
+.menu-toggle {
+  display: none;
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  width: 34px;
+  height: 34px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 3;
+}
+.menu-toggle span {
+  display: block;
+  width: 18px;
+  height: 1.5px;
+  background: var(--dorado-claro, var(--dorado));
+}
+
 nav {
   position: relative;
   z-index: 2;
@@ -93,10 +119,33 @@ nav a:hover::after,
 nav a.is-active::after {
   width: 100%;
 }
+
 @media (max-width: 640px) {
+  .menu-toggle {
+    display: flex;
+  }
+
+  /* Menú colapsado por defecto en mobile */
   nav {
     flex-direction: column;
-    gap: 16px;
-    align-items: center;
+    gap: 0;
+    align-items: stretch;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  nav a {
+    padding: 14px 24px;
+    text-align: center;
+    border-top: 1px solid var(--linea);
+  }
+  nav a::after {
+    display: none;
+  }
+
+  /* Se despliega cuando se abre con el botón */
+  nav.nav--open {
+    max-height: 320px;
   }
 }
