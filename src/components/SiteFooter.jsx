@@ -33,7 +33,7 @@ export default function SiteFooter() {
           </svg>
         </a>
       </div>
-      <div className="creado">© Karina De La Lama — Arte &amp; Magia - 2026 </div>
+      <div className="creado">© Karina De La Lama — Arte &amp; Magia — 2026 </div>
     </footer>
   )
 }
