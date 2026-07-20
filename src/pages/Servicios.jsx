@@ -50,7 +50,7 @@ export default function Servicios() {
       setLoading(true)
       const { data, error } = await supabase
         .from('servicios')
-        .select('id, title, slug, description, price, cover_image_url')
+        .select('id, title, slug, description, price, payment_info, cover_image_url')
         .eq('published', true)
         .order('created_at', { ascending: false })
       if (!error) setServicios(data || [])
@@ -63,6 +63,7 @@ export default function Servicios() {
     const mensaje = [
       `Hola! Quiero contratar el servicio "${servicio.title}".`,
       servicio.price != null ? `Vi que el precio es $${servicio.price}.` : '',
+      servicio.payment_info ? `Forma de pago: ${servicio.payment_info}.` : '',
     ].filter(Boolean).join(' ')
 
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`
@@ -91,13 +92,20 @@ export default function Servicios() {
             )}
             <h3>{s.title}</h3>
             <div className="servicio-card__descripcion">{renderDescripcion(s.description)}</div>
-            <div style={{ marginTop: 'auto', paddingTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-              <span className="label-mono" style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--dorado-claro, #B7924A)' }}>
-                {s.price != null ? `$${s.price}` : 'A consultar'}
-              </span>
-              <button type="button" className="btn-buy" onClick={() => contratar(s)}>
-                Quiero contratar
-              </button>
+            <div style={{ marginTop: 'auto', paddingTop: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                <span className="label-mono" style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--dorado-claro, #B7924A)' }}>
+                  {s.price != null ? `$${s.price}` : 'A consultar'}
+                </span>
+                <button type="button" className="btn-buy" onClick={() => contratar(s)}>
+                  Quiero contratar
+                </button>
+              </div>
+              {s.payment_info && (
+                <p className="label-mono" style={{ marginTop: '8px', opacity: 0.7, fontSize: '0.75rem' }}>
+                  {s.payment_info}
+                </p>
+              )}
             </div>
           </article>
         ))}
