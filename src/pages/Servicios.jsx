@@ -90,7 +90,7 @@ export default function Servicios() {
 
       <div className="publicaciones__grid">
         {servicios.map((s) => (
-          <article key={s.id} className="post-card" style={{ display: 'flex', flexDirection: 'column' }}>
+          <article key={s.id} className="post-card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             {s.cover_image_url && (
               <img src={s.cover_image_url} alt="" className="post-card__image" />
             )}
@@ -99,7 +99,7 @@ export default function Servicios() {
             <div style={{ marginTop: 'auto', paddingTop: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                 <span className="label-mono" style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--dorado-claro, #B7924A)' }}>
-                  {s.price != null ? `$${s.price}` : 'A consultar'}
+                  {s.price != null ? `$${s.price}` : 'Consultar'}
                 </span>
                 <button type="button" className="btn-buy" onClick={() => contratar(s)}>
                   Quiero contratar
