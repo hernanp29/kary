@@ -4,6 +4,43 @@ import './Publicaciones.css'
 
 const WHATSAPP_NUMBER = '5491159377545'
 
+// Misma convención que en el blog:
+// - Una línea que empieza con "## " se muestra como subtítulo.
+// - Una línea en blanco separa párrafos.
+function renderDescripcion(texto) {
+  if (!texto) return null
+
+  const bloques = texto.split('\n')
+  const elementos = []
+  let parrafoActual = []
+
+  function cerrarParrafo(key) {
+    if (parrafoActual.length > 0) {
+      elementos.push(<p key={`p-${key}`}>{parrafoActual.join(' ')}</p>)
+      parrafoActual = []
+    }
+  }
+
+  bloques.forEach((linea, i) => {
+    const trimmed = linea.trim()
+    if (trimmed.startsWith('## ')) {
+      cerrarParrafo(i)
+      elementos.push(
+        <h4 key={`h-${i}`} className="servicio-card__subtitulo">
+          {trimmed.slice(3)}
+        </h4>
+      )
+    } else if (trimmed === '') {
+      cerrarParrafo(i)
+    } else {
+      parrafoActual.push(trimmed)
+    }
+  })
+
+  cerrarParrafo('final')
+  return elementos
+}
+
 export default function Servicios() {
   const [servicios, setServicios] = useState([])
   const [loading, setLoading] = useState(true)
@@ -53,7 +90,7 @@ export default function Servicios() {
               <img src={s.cover_image_url} alt="" className="post-card__image" />
             )}
             <h3>{s.title}</h3>
-            <p>{s.description}</p>
+            <div className="servicio-card__descripcion">{renderDescripcion(s.description)}</div>
             <div style={{ marginTop: 'auto', paddingTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
               <span className="label-mono" style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--dorado-claro, #B7924A)' }}>
                 {s.price != null ? `$${s.price}` : 'A consultar'}
