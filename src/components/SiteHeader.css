@@ -172,8 +172,8 @@ nav a.is-active::after {
     left: 50%;
     transform: translateX(-50%);
     min-width: 180px;
-    margin-top: 14px;
-    padding: 8px 0;
+    margin-top: 0;
+    padding: 14px 0 8px; /* el padding de arriba reemplaza el gap: ahora es parte de la caja, no un hueco vacío */
     background: var(--verde-noche);
     border: 1px solid var(--linea);
     border-radius: var(--radius);
