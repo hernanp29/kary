@@ -7,6 +7,7 @@ import Publicaciones from './pages/Publicaciones'
 import Tienda from './pages/Tienda'
 import Talleres from './pages/Talleres'
 import Servicios from './pages/Servicios'
+import RecursosGratis from './pages/RecursosGratis'
 import Login from './pages/Login'
 import Admin from './pages/Admin'
 import PublicacionDetalle from './pages/PublicacionDetalle'
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/tienda" element={<Tienda />} />
           <Route path="/talleres" element={<Talleres />} />
           <Route path="/servicios" element={<Servicios />} />
+          <Route path="/recursos-gratis" element={<RecursosGratis />} />
           <Route path="/login" element={<Login />} />
           <Route
             path="/admin"
@@ -38,4 +40,5 @@ export default function App() {
     </div>
   )
 }
+
 
