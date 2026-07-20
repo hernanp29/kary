@@ -139,11 +139,12 @@ export default function AdminServices() {
           </label>
 
           <label>
-            Formas de pago (opcional)
-            <input
+            Formas de pago (opcional, una por línea)
+            <textarea
               value={form.payment_info}
               onChange={(e) => setForm({ ...form, payment_info: e.target.value })}
-              placeholder='ej: "2 cuotas de $5.000" o "Efectivo o transferencia"'
+              rows={3}
+              placeholder={'2 cuotas de $10.000\n3 cuotas de $15.000\nEfectivo o transferencia'}
             />
           </label>
 
