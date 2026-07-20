@@ -40,6 +40,7 @@ export default function SiteHeader() {
         <Link to="/tienda" className={isActive('/tienda') ? 'is-active' : ''} onClick={irA}>Tienda</Link>
         <Link to="/talleres" className={isActive('/talleres') ? 'is-active' : ''} onClick={irA}>Talleres</Link>
         <Link to="/servicios" className={isActive('/servicios') ? 'is-active' : ''} onClick={irA}>Servicios</Link>
+        <Link to="/recursos-gratis" className={isActive('/recursos-gratis') ? 'is-active' : ''} onClick={irA}>Recursos gratis</Link>
         <a href="#contacto" onClick={irA}>Contacto</a>
       </nav>
     </div>
