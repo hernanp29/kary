@@ -158,35 +158,13 @@ nav a.is-active::after {
   position: relative;
 }
 
-.nav-item--dropdown__row {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.nav-item--dropdown__toggle {
-  background: none;
-  border: none;
-  color: var(--hueso);
-  font-size: 1.15rem;
-  line-height: 1;
-  padding: 4px 6px;
-  cursor: pointer;
-  transition: transform 0.25s, color 0.25s;
-}
-
-.nav-item--dropdown.is-open .nav-item--dropdown__toggle {
-  transform: rotate(180deg);
-  color: var(--dorado-claro);
-}
-
 .nav-item--dropdown__menu {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-/* Desktop: dropdown flotante, aparece con hover o con el toggle */
+/* Desktop: dropdown flotante, aparece con hover o después de clickear "Tienda" */
 @media (min-width: 641px) {
   .nav-item--dropdown__menu {
     position: absolute;
@@ -229,23 +207,8 @@ nav a.is-active::after {
   }
 }
 
-/* Mobile: el submenú se despliega inline, anidado dentro del acordeón */
+/* Mobile: el submenú se despliega inline apenas se toca "Tienda", anidado en el acordeón */
 @media (max-width: 640px) {
-  .nav-item--dropdown__row a {
-    flex: 1;
-    border-top: 1px solid var(--linea);
-  }
-
-  .nav-item--dropdown__row {
-    display: flex;
-    width: 100%;
-  }
-
-  .nav-item--dropdown__toggle {
-    padding: 8px 20px;
-    border-top: 1px solid var(--linea);
-  }
-
   .nav-item--dropdown__menu {
     max-height: 0;
     overflow: hidden;
