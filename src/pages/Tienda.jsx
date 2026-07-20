@@ -245,8 +245,9 @@ export default function Tienda() {
   return (
     <div className="container tienda">
       <header className="tienda__header">
-        <span className="label-mono">Flor y fruto — Tienda</span>
-        <h1>Lo que se cosecha, se lleva</h1>
+        <span className="label-mono">Magias Herbales - tienda</span>
+        <h1>Sabiduría botánica para tu bienestar.
+Cosmética natural a base de plantas, pensada para cuidar de ti. Descubre nuestros productos y regálate una piel nutrida, radiante y saludable cada día</h1>
       </header>
 
       {loading && <p className="label-mono">Cargando catálogo…</p>}
