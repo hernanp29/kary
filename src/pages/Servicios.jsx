@@ -4,6 +4,8 @@ import './Publicaciones.css'
 
 const WHATSAPP_NUMBER = '5491159377545'
 
+const formatPrice = (n) => new Intl.NumberFormat('es-AR').format(n)
+
 // Misma convención que en el blog:
 // - Una línea que empieza con "## " se muestra como subtítulo.
 // - Una línea en blanco separa párrafos.
@@ -66,7 +68,7 @@ export default function Servicios() {
 
     const mensaje = [
       `Hola! Quiero contratar el servicio "${servicio.title}".`,
-      servicio.price != null ? `Vi que el precio es $${servicio.price}.` : '',
+      servicio.price != null ? `Vi que el precio es $${formatPrice(servicio.price)}.` : '',
       opcionesPago ? `Formas de pago que vi: ${opcionesPago}.` : '',
     ].filter(Boolean).join(' ')
 
@@ -97,21 +99,22 @@ export default function Servicios() {
             <h3>{s.title}</h3>
             <div className="servicio-card__descripcion">{renderDescripcion(s.description)}</div>
             <div style={{ marginTop: 'auto', paddingTop: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                <span className="label-mono" style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--dorado-claro, #B7924A)' }}>
-                  {s.price != null ? `$${s.price}` : 'Consultar'}
+              <div className="servicio-card__precio-row">
+                <span className="servicio-card__precio">
+                  {s.price != null ? `$${formatPrice(s.price)}` : 'Consultar'}
                 </span>
                 <button type="button" className="btn-buy" onClick={() => contratar(s)}>
                   Quiero contratar
                 </button>
               </div>
-              {s.payment_info && (
-                <ul className="servicio-card__pagos">
-                  {s.payment_info.split('\n').map((linea) => linea.trim()).filter(Boolean).map((linea, i) => (
-                    <li key={i}>{linea}</li>
-                  ))}
-                </ul>
-              )}
+              <ul className="servicio-card__pagos">
+                {s.payment_info &&
+                  s.payment_info
+                    .split('\n')
+                    .map((linea) => linea.trim())
+                    .filter(Boolean)
+                    .map((linea, i) => <li key={i}>{linea}</li>)}
+              </ul>
             </div>
           </article>
         ))}
