@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import AdminPosts from '../components/admin/AdminPosts'
 import AdminProducts from '../components/admin/AdminProducts'
 import AdminWorkshops from '../components/admin/AdminWorkshops'
+import AdminServices from '../components/admin/AdminServices'
 import AdminNewsletter from '../components/admin/AdminNewsletter'
 import './Admin.css'
 
@@ -10,6 +11,7 @@ const TABS = [
   { key: 'posts', label: 'Publicaciones' },
   { key: 'products', label: 'Tienda' },
   { key: 'workshops', label: 'Talleres' },
+  { key: 'services', label: 'Servicios' },
   { key: 'newsletter', label: 'Newsletter' },
 ]
 
@@ -41,6 +43,7 @@ export default function Admin() {
         {tab === 'posts' && <AdminPosts />}
         {tab === 'products' && <AdminProducts />}
         {tab === 'workshops' && <AdminWorkshops />}
+        {tab === 'services' && <AdminServices />}
         {tab === 'newsletter' && <AdminNewsletter />}
       </div>
     </div>
