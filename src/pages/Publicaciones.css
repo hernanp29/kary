@@ -132,3 +132,18 @@
   opacity: 0.6;
   margin: 4px 0 20px;
 }
+
+/* Agregar esto al final de src/pages/Publicaciones.css */
+
+.servicio-card__descripcion p {
+  margin: 0 0 10px;
+  line-height: 1.6;
+}
+
+.servicio-card__subtitulo {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--dorado-claro);
+  margin: 16px 0 8px;
+}
