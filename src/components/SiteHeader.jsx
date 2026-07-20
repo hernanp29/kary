@@ -1,14 +1,34 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 import './SiteHeader.css'
+
+function slugify(text) {
+  return text
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+}
 
 export default function SiteHeader() {
   const { pathname } = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [tiendaOpen, setTiendaOpen] = useState(false)
+  const [categorias, setCategorias] = useState([])
   const isActive = (path) => pathname === path
+
+  useEffect(() => {
+    supabase
+      .from('categorias')
+      .select('id, nombre')
+      .order('nombre')
+      .then(({ data }) => setCategorias(data || []))
+  }, [])
 
   function irA() {
     setMenuOpen(false)
+    setTiendaOpen(false)
   }
 
   return (
@@ -37,7 +57,38 @@ export default function SiteHeader() {
       <nav className={menuOpen ? 'nav--open' : ''}>
         <Link to="/" className={isActive('/') ? 'is-active' : ''} onClick={irA}>Inicio</Link>
         <Link to="/publicaciones" className={isActive('/publicaciones') ? 'is-active' : ''} onClick={irA}>Blog</Link>
-        <Link to="/tienda" className={isActive('/tienda') ? 'is-active' : ''} onClick={irA}>Tienda</Link>
+
+        <div className={`nav-item--dropdown ${tiendaOpen ? 'is-open' : ''}`}>
+          <span className="nav-item--dropdown__row">
+            <Link to="/tienda" className={isActive('/tienda') ? 'is-active' : ''} onClick={irA}>
+              Tienda
+            </Link>
+            {categorias.length > 0 && (
+              <button
+                type="button"
+                className="nav-item--dropdown__toggle"
+                aria-label="Ver categorías de la tienda"
+                aria-expanded={tiendaOpen}
+                onClick={() => setTiendaOpen((v) => !v)}
+              >
+                ▾
+              </button>
+            )}
+          </span>
+
+          {categorias.length > 0 && (
+            <ul className="nav-item--dropdown__menu">
+              {categorias.map((cat) => (
+                <li key={cat.id}>
+                  <Link to={`/tienda#${slugify(cat.nombre)}`} onClick={irA}>
+                    {cat.nombre}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
         <Link to="/talleres" className={isActive('/talleres') ? 'is-active' : ''} onClick={irA}>Talleres</Link>
         <Link to="/servicios" className={isActive('/servicios') ? 'is-active' : ''} onClick={irA}>Servicios</Link>
         <Link to="/recursos-gratis" className={isActive('/recursos-gratis') ? 'is-active' : ''} onClick={irA}>Recursos gratis</Link>
