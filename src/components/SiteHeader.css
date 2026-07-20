@@ -168,8 +168,9 @@ nav a.is-active::after {
   background: none;
   border: none;
   color: var(--hueso);
-  font-size: 0.7rem;
-  padding: 0;
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: 4px 6px;
   cursor: pointer;
   transition: transform 0.25s, color 0.25s;
 }
@@ -241,7 +242,7 @@ nav a.is-active::after {
   }
 
   .nav-item--dropdown__toggle {
-    padding: 0 20px;
+    padding: 8px 20px;
     border-top: 1px solid var(--linea);
   }
 
