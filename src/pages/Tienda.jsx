@@ -246,8 +246,8 @@ export default function Tienda() {
     <div className="container tienda">
       <header className="tienda__header">
         <span className="label-mono">Magias Herbales - tienda</span>
-        <h1>Sabiduría botánica para tu bienestar.
-            Cosmética natural a base de plantas, pensada para cuidar de ti. 
+        <h1>Sabiduría botánica para tu bienestar. 
+          Cosmética natural a base de plantas, pensada para cuidar de ti. 
           Descubre nuestros productos y regálate una piel nutrida, radiante y saludable cada día.</h1>
       </header>
 
