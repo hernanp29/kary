@@ -41,6 +41,8 @@
   gap: 22px;
 }
 
+/* ---------- Tarjeta (post o servicio) ---------- */
+
 .post-card {
   background: var(--paper-raised);
   border: 1px solid var(--line);
@@ -60,72 +62,17 @@
 .post-card h3 { font-size: 1.1rem; margin: 8px 0 6px; }
 .post-card p { color: var(--moss); font-size: 0.9rem; margin: 0; }
 
-.post-detalle__image {
-  width: 100%;
-  max-height: 420px;
-  object-fit: cover;
-  border-radius: var(--radius);
-  margin: 20px 0;
-}
-.post-detalle__contenido {
-  white-space: pre-line;
-  line-height: 1.7;
-  margin-top: 20px;
-  max-width: 720px;
-}
-.publicacion-detalle h1 {
-  margin-top: 10px;
-}
-.post-detalle__contenido {
-  max-width: 680px;
-  margin: 0 auto;
-}
-
-.post-detalle__contenido p {
-  margin-bottom: 18px;
-  line-height: 1.75;
-  color: var(--hueso);
-  opacity: 0.9;
-}
-
-.post-detalle__subtitulo {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-style: italic;
-  color: var(--dorado-claro);
-  margin: 40px 0 18px;
-}
-
-.publicacion-detalle h1 {
-  color: var(--dorado-claro);
-}
-
-.post-detalle__contenido {
-  max-width: 680px;
-  margin: 0 auto;
-}
-
-.post-detalle__contenido p {
-  margin-bottom: 18px;
-  line-height: 1.75;
-  color: var(--hueso);
-  opacity: 0.9;
-}
-
-.post-detalle__subtitulo {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-style: italic;
-  color: var(--dorado-claro);
-  margin: 40px 0 18px;
-}
-
-/* Agregar esto al final de src/pages/Publicaciones.css */
-
 .post-card__fecha {
   display: block;
   margin-top: 10px;
   opacity: 0.6;
+}
+
+/* ---------- Detalle de publicación ---------- */
+
+.publicacion-detalle h1 {
+  margin-top: 10px;
+  color: var(--dorado-claro);
 }
 
 .post-detalle__fecha {
@@ -133,22 +80,37 @@
   margin: 4px 0 20px;
 }
 
-/* Agregar esto al final de src/pages/Publicaciones.css */
-
-.servicio-card__descripcion p {
-  margin: 0 0 10px;
-  line-height: 1.6;
+.post-detalle__image {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  margin: 20px 0;
 }
 
-.servicio-card__subtitulo {
+.post-detalle__contenido {
+  white-space: pre-line;
+  line-height: 1.75;
+  margin: 20px auto 0;
+  max-width: 680px;
+}
+
+.post-detalle__contenido p {
+  margin-bottom: 18px;
+  line-height: 1.75;
+  color: var(--hueso);
+  opacity: 0.9;
+}
+
+.post-detalle__subtitulo {
   font-family: var(--font-display);
-  font-size: 1rem;
+  font-size: 1.5rem;
   font-style: italic;
   color: var(--dorado-claro);
-  margin: 16px 0 8px;
+  margin: 40px 0 18px;
 }
 
-/* Agregar esto al final de src/pages/Publicaciones.css */
+/* ---------- Servicios (misma grilla/tarjeta, contenido propio) ---------- */
 
 .servicio-card__descripcion p {
   margin: 0 0 10px;
