@@ -7,6 +7,7 @@ const EMPTY_FORM = {
   slug: '',
   description: '',
   price: '',
+  payment_info: '',
   cover_image_url: '',
   published: false,
 }
@@ -61,6 +62,7 @@ export default function AdminServices() {
       slug: form.slug || slugify(form.title),
       description: form.description,
       price: form.price ? Number(form.price) : null,
+      payment_info: form.payment_info,
       cover_image_url: form.cover_image_url,
       published: form.published,
     }
@@ -133,6 +135,15 @@ export default function AdminServices() {
               step="0.01"
               value={form.price}
               onChange={(e) => setForm({ ...form, price: e.target.value })}
+            />
+          </label>
+
+          <label>
+            Formas de pago (opcional)
+            <input
+              value={form.payment_info}
+              onChange={(e) => setForm({ ...form, payment_info: e.target.value })}
+              placeholder='ej: "2 cuotas de $5.000" o "Efectivo o transferencia"'
             />
           </label>
 
