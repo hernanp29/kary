@@ -134,31 +134,6 @@ export default function AdminNewsletter() {
 
       {errorLista && <p className="admin-error">{errorLista}</p>}
 
-      {!loadingCount && suscriptores.length > 0 && (
-        <table className="admin-table" style={{ marginBottom: '2rem' }}>
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Email</th>
-              <th>Suscripto el</th>
-            </tr>
-          </thead>
-          <tbody>
-            {suscriptores.map((s) => (
-              <tr key={s.email}>
-                <td>{s.full_name || '—'}</td>
-                <td>{s.email}</td>
-                <td>{s.created_at ? new Date(s.created_at).toLocaleDateString('es-AR') : '—'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-
-      {!loadingCount && suscriptores.length === 0 && !errorLista && (
-        <p className="admin-empty">Todavía no hay suscriptores.</p>
-      )}
-
       <form
         className="admin-form"
         onSubmit={(e) => {
@@ -237,6 +212,35 @@ export default function AdminNewsletter() {
           </p>
         )}
       </form>
+
+      <h2 style={{ marginTop: '2.5rem' }}>Suscriptores</h2>
+
+      {!loadingCount && suscriptores.length > 0 && (
+        <div style={{ maxHeight: '420px', overflowY: 'auto', border: '0.5px solid var(--linea, rgba(255,255,255,0.15))', borderRadius: '8px' }}>
+          <table className="admin-table" style={{ marginBottom: 0 }}>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Suscripto el</th>
+              </tr>
+            </thead>
+            <tbody>
+              {suscriptores.map((s) => (
+                <tr key={s.email}>
+                  <td>{s.full_name || '—'}</td>
+                  <td>{s.email}</td>
+                  <td>{s.created_at ? new Date(s.created_at).toLocaleDateString('es-AR') : '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {!loadingCount && suscriptores.length === 0 && !errorLista && (
+        <p className="admin-empty">Todavía no hay suscriptores.</p>
+      )}
     </div>
   )
 }
