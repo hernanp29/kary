@@ -24,7 +24,7 @@ export default function Talleres() {
     <div className="container talleres">
       <header className="talleres__header">
         <span className="label-mono">Raíz — Talleres</span>
-        <h1>Donde se aprende con las manos en la tierra</h1>
+        <h1>Próximamente...</h1>
       </header>
 
       {loading && <p className="label-mono">Cargando talleres…</p>}
