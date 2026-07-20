@@ -147,7 +147,7 @@ export default async function handler(req, res) {
             ${nombre ? `<p style="margin:0 0 16px;">Hola ${nombre},</p>` : ''}
             ${cuerpoHtml}
             ${imagenesHtml}
-            <p style="margin-top:28px;">Un abrazo,<br/>Karina</p>
+            <p style="margin-top:28px;">Con amor<br/>Karina De La Lama -arte & magia-</p>
           </div>
         `,
         attachments: nodemailerAttachments,
