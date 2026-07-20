@@ -1,10 +1,20 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import './Tienda.css'
 
 const WHATSAPP_NUMBER = '5491159377545'
 
+function slugify(text) {
+  return text
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+}
+
 export default function Tienda() {
+  const { hash } = useLocation()
   const [categorias, setCategorias] = useState([])
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -21,6 +31,15 @@ export default function Tienda() {
   useEffect(() => {
     fetchAll()
   }, [])
+
+  // Al llegar desde el dropdown de "Tienda" con un #categoria en la URL,
+  // hacemos scroll a esa sección una vez que ya cargaron los datos.
+  useEffect(() => {
+    if (!loading && hash) {
+      const el = document.querySelector(hash)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [loading, hash])
 
   async function fetchAll() {
     setLoading(true)
@@ -257,7 +276,7 @@ export default function Tienda() {
       )}
 
       {gruposPorCategoria.map((grupo) => (
-        <section key={grupo.id} className="tienda__categoria">
+        <section key={grupo.id} id={slugify(grupo.nombre)} className="tienda__categoria">
           <div className="tienda__categoria-header">
             <h2>{grupo.nombre}</h2>
             {grupo.descripcion && <p className="tienda__categoria-desc">{grupo.descripcion}</p>}
@@ -269,7 +288,7 @@ export default function Tienda() {
       ))}
 
       {sinCategoria.length > 0 && (
-        <section className="tienda__categoria">
+        <section id="otros" className="tienda__categoria">
           <div className="tienda__categoria-header">
             <h2>Otros</h2>
           </div>
@@ -361,3 +380,4 @@ export default function Tienda() {
     </div>
   )
 }
+
