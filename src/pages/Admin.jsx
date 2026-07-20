@@ -5,6 +5,7 @@ import AdminProducts from '../components/admin/AdminProducts'
 import AdminWorkshops from '../components/admin/AdminWorkshops'
 import AdminServices from '../components/admin/AdminServices'
 import AdminNewsletter from '../components/admin/AdminNewsletter'
+import AdminRecursos from '../components/admin/AdminRecursos'
 import './Admin.css'
 
 const TABS = [
@@ -12,6 +13,7 @@ const TABS = [
   { key: 'products', label: 'Tienda' },
   { key: 'workshops', label: 'Talleres' },
   { key: 'services', label: 'Servicios' },
+  { key: 'recursos', label: 'Recursos gratis' },
   { key: 'newsletter', label: 'Newsletter' },
 ]
 
@@ -44,6 +46,7 @@ export default function Admin() {
         {tab === 'products' && <AdminProducts />}
         {tab === 'workshops' && <AdminWorkshops />}
         {tab === 'services' && <AdminServices />}
+        {tab === 'recursos' && <AdminRecursos />}
         {tab === 'newsletter' && <AdminNewsletter />}
       </div>
     </div>
