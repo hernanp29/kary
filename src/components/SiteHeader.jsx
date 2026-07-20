@@ -59,22 +59,13 @@ export default function SiteHeader() {
         <Link to="/publicaciones" className={isActive('/publicaciones') ? 'is-active' : ''} onClick={irA}>Blog</Link>
 
         <div className={`nav-item--dropdown ${tiendaOpen ? 'is-open' : ''}`}>
-          <span className="nav-item--dropdown__row">
-            <Link to="/tienda" className={isActive('/tienda') ? 'is-active' : ''} onClick={irA}>
-              Tienda
-            </Link>
-            {categorias.length > 0 && (
-              <button
-                type="button"
-                className="nav-item--dropdown__toggle"
-                aria-label="Ver categorías de la tienda"
-                aria-expanded={tiendaOpen}
-                onClick={() => setTiendaOpen((v) => !v)}
-              >
-                ▾
-              </button>
-            )}
-          </span>
+          <Link
+            to="/tienda"
+            className={isActive('/tienda') ? 'is-active' : ''}
+            onClick={() => setTiendaOpen(true)}
+          >
+            Tienda
+          </Link>
 
           {categorias.length > 0 && (
             <ul className="nav-item--dropdown__menu">
