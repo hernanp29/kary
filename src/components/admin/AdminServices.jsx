@@ -128,7 +128,7 @@ export default function AdminServices() {
           </label>
 
           <label>
-            Precio (opcional, dejalo vacío si preferís "a consultar")
+            Precio (opcional, dejalo vacío si preferís "consultar")
             <input
               type="number"
               min="0"
@@ -199,7 +199,7 @@ export default function AdminServices() {
             {servicios.map((s) => (
               <tr key={s.id}>
                 <td>{s.title}</td>
-                <td>{s.price != null ? `$${s.price}` : 'A consultar'}</td>
+                <td>{s.price != null ? `$${s.price}` : 'Consultar'}</td>
                 <td>{s.published ? 'Publicado' : 'Borrador'}</td>
                 <td className="admin-table__actions">
                   <button className="btn-secondary" onClick={() => openEdit(s)}>Editar</button>
