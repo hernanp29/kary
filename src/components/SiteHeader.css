@@ -148,6 +148,122 @@ nav a.is-active::after {
 
   /* Se despliega cuando se abre con el botón */
   nav.nav--open {
-    max-height: 320px;
+    max-height: 600px;
+  }
+}
+
+/* ---------- Dropdown de categorías dentro de "Tienda" ---------- */
+
+.nav-item--dropdown {
+  position: relative;
+}
+
+.nav-item--dropdown__row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-item--dropdown__toggle {
+  background: none;
+  border: none;
+  color: var(--hueso);
+  font-size: 0.7rem;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.25s, color 0.25s;
+}
+
+.nav-item--dropdown.is-open .nav-item--dropdown__toggle {
+  transform: rotate(180deg);
+  color: var(--dorado-claro);
+}
+
+.nav-item--dropdown__menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Desktop: dropdown flotante, aparece con hover o con el toggle */
+@media (min-width: 641px) {
+  .nav-item--dropdown__menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 180px;
+    margin-top: 14px;
+    padding: 8px 0;
+    background: var(--verde-noche);
+    border: 1px solid var(--linea);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+    z-index: 5;
+  }
+
+  .nav-item--dropdown:hover .nav-item--dropdown__menu,
+  .nav-item--dropdown.is-open .nav-item--dropdown__menu {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .nav-item--dropdown__menu li a {
+    display: block;
+    padding: 9px 20px;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  .nav-item--dropdown__menu li a::after {
+    display: none;
+  }
+
+  .nav-item--dropdown__menu li a:hover {
+    background: var(--verde-musgo);
+  }
+}
+
+/* Mobile: el submenú se despliega inline, anidado dentro del acordeón */
+@media (max-width: 640px) {
+  .nav-item--dropdown__row a {
+    flex: 1;
+    border-top: 1px solid var(--linea);
+  }
+
+  .nav-item--dropdown__row {
+    display: flex;
+    width: 100%;
+  }
+
+  .nav-item--dropdown__toggle {
+    padding: 0 20px;
+    border-top: 1px solid var(--linea);
+  }
+
+  .nav-item--dropdown__menu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+    background: rgba(0, 0, 0, 0.15);
+  }
+
+  .nav-item--dropdown.is-open .nav-item--dropdown__menu {
+    max-height: 400px;
+  }
+
+  .nav-item--dropdown__menu li a {
+    display: block;
+    padding: 12px 24px 12px 40px;
+    font-size: 0.75rem;
+    border-top: 1px solid var(--linea);
+  }
+
+  .nav-item--dropdown__menu li a::after {
+    display: none;
   }
 }
