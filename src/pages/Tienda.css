@@ -1,7 +1,7 @@
 .tienda { padding: 24px 24px 72px; }
 
 .tienda__header { text-align: center; margin-bottom: 32px; }
-.tienda__header h1 { font-size: 1rem; margin-top: 10px; color: var(--leaf-deep); }
+.tienda__header h1 { font-size: 1.9rem; margin-top: 10px; color: var(--leaf-deep); }
 
 .tienda__empty { text-align: center; color: var(--moss); max-width: 480px; margin: 40px auto; }
 
