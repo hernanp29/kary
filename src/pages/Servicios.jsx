@@ -60,10 +60,14 @@ export default function Servicios() {
   }, [])
 
   function contratar(servicio) {
+    const opcionesPago = servicio.payment_info
+      ? servicio.payment_info.split('\n').map((l) => l.trim()).filter(Boolean).join(', ')
+      : ''
+
     const mensaje = [
       `Hola! Quiero contratar el servicio "${servicio.title}".`,
       servicio.price != null ? `Vi que el precio es $${servicio.price}.` : '',
-      servicio.payment_info ? `Forma de pago: ${servicio.payment_info}.` : '',
+      opcionesPago ? `Formas de pago que vi: ${opcionesPago}.` : '',
     ].filter(Boolean).join(' ')
 
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`
@@ -102,9 +106,11 @@ export default function Servicios() {
                 </button>
               </div>
               {s.payment_info && (
-                <p className="label-mono" style={{ marginTop: '8px', opacity: 0.7, fontSize: '0.75rem' }}>
-                  {s.payment_info}
-                </p>
+                <ul className="servicio-card__pagos">
+                  {s.payment_info.split('\n').map((linea) => linea.trim()).filter(Boolean).map((linea, i) => (
+                    <li key={i}>{linea}</li>
+                  ))}
+                </ul>
               )}
             </div>
           </article>
