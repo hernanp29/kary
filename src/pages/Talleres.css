@@ -27,6 +27,16 @@
 .workshop-row__body h3 { font-size: 1.05rem; margin: 6px 0; }
 .workshop-row__body p { color: var(--moss); font-size: 0.88rem; margin: 0 0 6px; }
 
+.workshop-row__image {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  margin: 10px 0;
+}
+
 .modality-tag {
   font-family: var(--font-mono);
   font-size: 0.68rem;
@@ -60,4 +70,5 @@
   .workshop-row { grid-template-columns: 1fr; text-align: left; }
   .workshop-row__date { text-align: left; }
   .workshop-row__action { flex-direction: row; justify-content: space-between; }
+  .workshop-row__image { max-width: 100%; }
 }
