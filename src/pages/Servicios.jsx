@@ -67,10 +67,8 @@ export default function Servicios() {
       : ''
 
     const mensaje = [
-      `Hola! Quiero contratar el servicio "${servicio.title}".`,
-      servicio.price != null ? `Vi que el precio es $${formatPrice(servicio.price)}.` : '',
-      opcionesPago ? `Formas de pago que vi: ${opcionesPago}.` : '',
-    ].filter(Boolean).join(' ')
+      `¡Hola! 👋 Me interesa contratar uno de tus servicios y quisiera consultar disponibilidad de fechas y valores. ¡Espero tu respuesta! 🌿`,
+      ].filter(Boolean).join(' ')
 
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`
     window.open(url, '_blank')
