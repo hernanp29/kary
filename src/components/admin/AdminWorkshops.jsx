@@ -11,6 +11,7 @@ const EMPTY_FORM = {
   capacity: '',
   price: '',
   content_url: '',
+  cover_image_url: '',
 }
 
 export default function AdminWorkshops() {
@@ -84,6 +85,7 @@ export default function AdminWorkshops() {
       capacity: form.capacity ? Number(form.capacity) : null,
       price: priceNum,
       content_url: form.content_url,
+      cover_image_url: form.cover_image_url,
     }
 
     const query = form.id
@@ -139,6 +141,15 @@ export default function AdminWorkshops() {
             <textarea
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </label>
+
+          <label>
+            URL de imagen
+            <input
+              value={form.cover_image_url}
+              onChange={(e) => setForm({ ...form, cover_image_url: e.target.value })}
+              placeholder="https://…"
             />
           </label>
 
