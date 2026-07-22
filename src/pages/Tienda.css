@@ -96,6 +96,7 @@
 .bienvenida__texto p {
   margin-bottom: 16px;
   opacity: 0.9;
+  text-indent: 30px;
 }
 
 .bienvenida__firma {
