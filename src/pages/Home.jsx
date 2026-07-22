@@ -110,11 +110,9 @@ function SobreMi() {
     <section className="sobre-mi">
       <div className="sobre-mi__texto">
         <span className="eyebrow"></span>
-        <h2>Bienvenida a mi universo</h2>
         <p className="sobre-mi__firma-nombre">Soy Karina De La Lama.</p>
         <p>
           Entre plantas, preparados, símbolos y libros, fusiono la sabiduría de la medicina verde, la geometría sagrada y el arte para crear un espacio de sanación y autodescubrimiento.
-
         </p>
         <p>
           Mi propósito: Acompaño a mujeres comprometidas a profundizar en sí mismas, reconectar con su magia interna y habitar su vida desde el amor, la calma y el equilibrio personal.
@@ -155,7 +153,7 @@ export default function Home() {
       <section className="hero" id="inicio">
         <span className="eyebrow">Círculo sagrado</span>
         <h2>Sé parte de esta comunidad</h2>
-        <p>
+        <p className="hero__intro">
           Únete ahora para obtener acceso anticipado a ejercicios, mensajes del universo
           y consejos para manifestar la vida que realmente deseas tener.
           Con tu registro te enviamos un PDF gratuito de "plantas medicinales y usos mágicos "
@@ -189,3 +187,5 @@ export default function Home() {
     </div>
   )
 }
+
+
