@@ -105,6 +105,29 @@ function Bienvenida() {
   )
 }
 
+function SobreMi() {
+  return (
+    <section className="sobre-mi">
+      <div className="sobre-mi__texto">
+        <span className="eyebrow"></span>
+        <h2>Bienvenida a mi universo</h2>
+        <p className="sobre-mi__firma-nombre">Soy Karina De La Lama.</p>
+        <p>
+          Entre plantas, preparados, símbolos y libros, encontré mi camino como bioterapeuta
+          y bruja verde. Creo firmemente que la naturaleza y el arte son medicinas del alma.
+        </p>
+        <p>
+          Acompaño a mujeres valientes y comprometidas a reencontrarse con su esencia,
+          sanar la relación que tienen consigo mismas y florecer a su propio ritmo.
+        </p>
+      </div>
+      <div className="sobre-mi__imagen">
+        <img src="https://PEGA-ACA-EL-LINK-DE-TU-FOTO.jpg" alt="Karina De La Lama" />
+      </div>
+    </section>
+  )
+}
+
 export default function Home() {
   const [posts, setPosts] = useState([])
   const [loadingPosts, setLoadingPosts] = useState(true)
@@ -127,6 +150,8 @@ export default function Home() {
   return (
     <div className="home">
       <Bienvenida />
+
+      <SobreMi />
 
       <section className="hero" id="inicio">
         <span className="eyebrow">Círculo sagrado</span>
@@ -165,3 +190,4 @@ export default function Home() {
     </div>
   )
 }
+
