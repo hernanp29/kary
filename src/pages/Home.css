@@ -1,3 +1,4 @@
+ome · CSS
 /* ===== HERO / SUSCRIPCIÓN ===== */
 .hero {
   position: relative;
@@ -28,7 +29,7 @@
   max-width: 520px;
   margin: 0 auto 34px;
 }
-
+ 
 .btn {
   display: inline-block;
   padding: 15px 42px;
@@ -45,7 +46,7 @@
   color: var(--verde-noche);
 }
 .btn:disabled { opacity: 0.6; cursor: default; }
-
+ 
 .subscribe-form {
   display: flex;
   flex-wrap: wrap;
@@ -70,14 +71,14 @@
   border-color: var(--dorado);
 }
 .subscribe-form .btn { flex: 1 1 100%; }
-
+ 
 .subscribe__feedback {
   font-size: 0.9rem;
   margin-top: 8px;
 }
 .subscribe__feedback--success { color: var(--dorado-claro); }
 .subscribe__feedback--error { color: #d98a6a; width: 100%; margin-top: 10px; }
-
+ 
 /* ===== SECCIONES GENERALES ===== */
 section {
   position: relative;
@@ -100,7 +101,7 @@ section {
   background: var(--dorado);
   margin: 14px auto 0;
 }
-
+ 
 /* ===== POPULARES ===== */
 .populares-grid {
   display: grid;
@@ -133,7 +134,7 @@ section {
   font-style: italic;
   text-align: center;
 }
-
+ 
 /* ===== BLOG ===== */
 .blog-header {
   display: flex;
@@ -174,7 +175,7 @@ section {
 }
 .blog-card h3 { margin-top: 12px; font-size: 1.35rem; font-weight: 500; }
 .blog-card p { margin-top: 10px; font-size: 0.9rem; color: var(--hueso); opacity: 0.7; }
-
+ 
 /* ===== INSTAGRAM ===== */
 .insta-header { text-align: center; margin-bottom: 36px; }
 .insta-header .handle {
@@ -201,7 +202,7 @@ section {
   transition: transform 0.5s, filter 0.5s;
 }
 .insta-grid a:hover img { transform: scale(1.06); filter: saturate(1) brightness(1.05); }
-
+ 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 900px) {
   .populares-grid { grid-template-columns: repeat(2, 1fr); }
@@ -211,10 +212,51 @@ section {
   .blog-header .section-title { text-align: center; }
   .blog-header .section-title::after { margin: 14px auto 0; }
 }
-
+ 
 @media (max-width: 640px) {
   .hero { padding: 70px 20px 60px; }
   .populares-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
   .insta-grid { grid-template-columns: repeat(3, 1fr); }
   section { padding: 50px 18px; }
 }
+ 
+/* ===== SOBRE MÍ ===== */
+.sobre-mi {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+  padding: 70px 24px;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+ 
+.sobre-mi__texto { flex: 1 1 480px; }
+ 
+.sobre-mi__texto p { margin-bottom: 16px; opacity: 0.9; }
+ 
+.sobre-mi__firma-nombre {
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--dorado-claro);
+}
+ 
+.sobre-mi__imagen {
+  flex: 1 1 380px;
+  max-width: 420px;
+}
+ 
+.sobre-mi__imagen img {
+  width: 100%;
+  border-radius: var(--radius, 8px);
+  object-fit: cover;
+  display: block;
+}
+ 
+@media (max-width: 800px) {
+  .sobre-mi {
+    flex-direction: column-reverse;
+    padding: 50px 20px;
+  }
+  .sobre-mi__imagen { max-width: 100%; }
+}
+ 
