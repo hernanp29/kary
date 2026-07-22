@@ -110,7 +110,6 @@ function SobreMi() {
     <section className="sobre-mi">
       <div className="sobre-mi__texto">
         <span className="eyebrow"></span>
-        <h2>Bienvenida a mi universo</h2>
         <p className="sobre-mi__firma-nombre">Soy Karina De La Lama.</p>
         <p>
           Entre plantas, preparados, símbolos y libros, encontré mi camino como bioterapeuta
