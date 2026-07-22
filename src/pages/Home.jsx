@@ -76,22 +76,22 @@ function Bienvenida() {
         <span className="eyebrow"></span>
         <h2>Bienvenida a mi jardín secreto</h2>
         <p>
-            Este espacio nació del deseo de compartir los saberes y las experiencias que han
+          Este espacio nació del deseo de compartir los saberes y las experiencias que han
           transformado mi manera de habitar el mundo. Es un jardín cultivado con paciencia,
           donde cada planta, cada símbolo y cada ritual guarda una historia que merece ser contada.
         </p>
         <p>
-            Aquí encontrarás la medicina de las plantas, la belleza de la geometría sagrada, la
+          Aquí encontrarás la medicina de las plantas, la belleza de la geometría sagrada, la
           sabiduría de los ciclos de la naturaleza y pequeños rituales para volver a lo esencial.
           También compartiré recetas, libros, imprimibles y reflexiones que forman parte de mi camino.
         </p>
         <p>
-            No pretendo tener todas las respuestas. Mi intención es abrir un espacio de encuentro,
+          No pretendo tener todas las respuestas. Mi intención es abrir un espacio de encuentro,
           donde el conocimiento ancestral dialogue con la experiencia cotidiana y donde cada
           persona pueda descubrir su propia forma de conectar con la naturaleza.
         </p>
         <p>
-            Gracias por llegar hasta acá. Espero que este jardín sea un refugio para detenerte un
+          Gracias por llegar hasta acá. Espero que este jardín sea un refugio para detenerte un
           instante, aprender algo nuevo y recordar que también somos naturaleza.
         </p>
         <p>Las puertas quedan abiertas.</p>
@@ -110,17 +110,19 @@ function SobreMi() {
     <section className="sobre-mi">
       <div className="sobre-mi__texto">
         <span className="eyebrow"></span>
+        <h2>Bienvenida a mi universo</h2>
         <p className="sobre-mi__firma-nombre">Soy Karina De La Lama.</p>
         <p>
-            Entre plantas, preparados, símbolos y libros, fusiono la sabiduría de la medicina verde, la geometría sagrada y el arte para crear un espacio de sanación y autodescubrimiento.
-
+          Entre plantas, preparados, símbolos y libros, encontré mi camino como bioterapeuta
+          y bruja verde. Creo firmemente que la naturaleza y el arte son medicinas del alma.
         </p>
         <p>
-            Mi propósito: Acompaño a mujeres comprometidas a profundizar en sí mismas, reconectar con su magia interna y habitar su vida desde el amor, la calma y el equilibrio personal.
+          Acompaño a mujeres valientes y comprometidas a reencontrarse con su esencia,
+          sanar la relación que tienen consigo mismas y florecer a su propio ritmo.
         </p>
       </div>
       <div className="sobre-mi__imagen">
-        <img src="https://i.ibb.co/7J2hL8fQ/Gemini-Generated-Image-uyka02uyka02uyka.png" alt="Karina De La Lama" />
+        <img src="https://PEGA-ACA-EL-LINK-DE-TU-FOTO.jpg" alt="Karina De La Lama" />
       </div>
     </section>
   )
@@ -154,10 +156,10 @@ export default function Home() {
       <section className="hero" id="inicio">
         <span className="eyebrow">Círculo sagrado</span>
         <h2>Sé parte de esta comunidad</h2>
-        <p style="text-indent: 30px;">
-            Únete ahora para obtener acceso anticipado a ejercicios, mensajes del universo
+        <p>
+          Únete ahora para obtener acceso anticipado a ejercicios, mensajes del universo
           y consejos para manifestar la vida que realmente deseas tener.
-            Con tu registro te enviamos un PDF gratuito de "plantas medicinales y usos mágicos "
+          Con tu registro te enviamos un PDF gratuito de "plantas medicinales y usos mágicos "
         </p>
         <SubscribeForm />
       </section>
@@ -188,4 +190,3 @@ export default function Home() {
     </div>
   )
 }
-
