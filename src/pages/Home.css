@@ -27,7 +27,6 @@
   opacity: 0.85;
   max-width: 520px;
   margin: 0 auto 34px;
-  text-indent: 30px;
 }
  
 .btn {
@@ -232,7 +231,7 @@ section {
  
 .sobre-mi__texto { flex: 1 1 480px; }
  
-.sobre-mi__texto p { margin-bottom: 16px; opacity: 0.9; text-indent: 30px; }
+.sobre-mi__texto p { margin-bottom: 16px; opacity: 0.9; }
  
 .sobre-mi__firma-nombre {
   font-style: italic;
