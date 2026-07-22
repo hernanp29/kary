@@ -121,7 +121,7 @@ function SobreMi() {
         </p>
       </div>
       <div className="sobre-mi__imagen">
-        <img src="https://PEGA-ACA-EL-LINK-DE-TU-FOTO.jpg" alt="Karina De La Lama" />
+        <img src="https://i.ibb.co/7J2hL8fQ/Gemini-Generated-Image-uyka02uyka02uyka.png" alt="Karina De La Lama" />
       </div>
     </section>
   )
