@@ -75,26 +75,26 @@ function Bienvenida() {
       <div className="bienvenida__texto">
         <span className="eyebrow"></span>
         <h2>Bienvenida a mi jardín secreto</h2>
-        <p style="text-indent: 30px;">
+        <p>
             Este espacio nació del deseo de compartir los saberes y las experiencias que han
           transformado mi manera de habitar el mundo. Es un jardín cultivado con paciencia,
           donde cada planta, cada símbolo y cada ritual guarda una historia que merece ser contada.
         </p>
-        <p style="text-indent: 30px;">
+        <p>
             Aquí encontrarás la medicina de las plantas, la belleza de la geometría sagrada, la
           sabiduría de los ciclos de la naturaleza y pequeños rituales para volver a lo esencial.
           También compartiré recetas, libros, imprimibles y reflexiones que forman parte de mi camino.
         </p>
-        <p style="text-indent: 30px;">
+        <p>
             No pretendo tener todas las respuestas. Mi intención es abrir un espacio de encuentro,
           donde el conocimiento ancestral dialogue con la experiencia cotidiana y donde cada
           persona pueda descubrir su propia forma de conectar con la naturaleza.
         </p>
-        <p style="text-indent: 30px;">
+        <p>
             Gracias por llegar hasta acá. Espero que este jardín sea un refugio para detenerte un
           instante, aprender algo nuevo y recordar que también somos naturaleza.
         </p>
-        <p style="text-indent: 30px;">Las puertas quedan abiertas.</p>
+        <p>Las puertas quedan abiertas.</p>
         <p className="bienvenida__firma">
           Con amor,<br />
           Karina De La Lama<br />
@@ -111,11 +111,11 @@ function SobreMi() {
       <div className="sobre-mi__texto">
         <span className="eyebrow"></span>
         <p className="sobre-mi__firma-nombre">Soy Karina De La Lama.</p>
-        <p style="text-indent: 30px;">
+        <p>
             Entre plantas, preparados, símbolos y libros, fusiono la sabiduría de la medicina verde, la geometría sagrada y el arte para crear un espacio de sanación y autodescubrimiento.
 
         </p>
-        <p style="text-indent: 30px;">
+        <p>
             Mi propósito: Acompaño a mujeres comprometidas a profundizar en sí mismas, reconectar con su magia interna y habitar su vida desde el amor, la calma y el equilibrio personal.
         </p>
       </div>
