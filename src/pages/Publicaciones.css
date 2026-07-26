@@ -95,6 +95,12 @@
   max-width: 680px;
 }
 
+.post-detalle__contenido::after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
 .post-detalle__contenido p {
   margin-bottom: 18px;
   line-height: 1.75;
@@ -103,6 +109,7 @@
 }
 
 .post-detalle__subtitulo {
+  clear: both;
   font-family: var(--font-display);
   font-size: 1.5rem;
   font-style: italic;
@@ -117,6 +124,34 @@
   object-fit: cover;
   border-radius: var(--radius);
   margin: 32px 0;
+}
+
+.post-detalle__inline-image--izquierda,
+.post-detalle__inline-image--derecha {
+  width: 45%;
+  max-height: 340px;
+  margin: 6px 0 16px;
+}
+
+.post-detalle__inline-image--izquierda {
+  float: left;
+  margin-right: 24px;
+}
+
+.post-detalle__inline-image--derecha {
+  float: right;
+  margin-left: 24px;
+}
+
+@media (max-width: 640px) {
+  /* En celular el texto al costado de una imagen se lee mal: siempre apilado */
+  .post-detalle__inline-image--izquierda,
+  .post-detalle__inline-image--derecha {
+    float: none;
+    width: 100%;
+    max-height: 320px;
+    margin: 24px 0;
+  }
 }
 
 /* ---------- Servicios (misma grilla/tarjeta, contenido propio) ---------- */
