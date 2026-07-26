@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
 const EMPTY_FORM = {
@@ -19,6 +19,34 @@ export default function AdminPosts() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const contenidoRef = useRef(null)
+
+  function insertarImagen() {
+    const url = window.prompt('Pegá la URL de la imagen:')
+    if (!url) return
+    const alt = window.prompt('Descripción breve de la imagen (opcional):', '') || ''
+
+    const snippet = `\n![${alt}](${url})\n`
+    const textarea = contenidoRef.current
+    const actual = form.content
+
+    if (!textarea) {
+      setForm({ ...form, content: actual + snippet })
+      return
+    }
+
+    const inicio = textarea.selectionStart
+    const fin = textarea.selectionEnd
+    const nuevoContenido = actual.slice(0, inicio) + snippet + actual.slice(fin)
+    setForm({ ...form, content: nuevoContenido })
+
+    // Reubicar el cursor justo después de la imagen insertada
+    requestAnimationFrame(() => {
+      const posicion = inicio + snippet.length
+      textarea.focus()
+      textarea.setSelectionRange(posicion, posicion)
+    })
+  }
 
   async function fetchPosts() {
     setLoading(true)
@@ -135,13 +163,27 @@ export default function AdminPosts() {
           </label>
 
           <label>
-            Contenido
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+              Contenido
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={insertarImagen}
+                style={{ fontSize: '0.75rem', padding: '4px 10px' }}
+              >
+                + Insertar imagen
+              </button>
+            </span>
             <textarea
+              ref={contenidoRef}
               value={form.content}
               onChange={(e) => setForm({ ...form, content: e.target.value })}
               required
               style={{ minHeight: 180 }}
             />
+            <span style={{ fontSize: '0.75rem', opacity: 0.65 }}>
+              Con varios párrafos, apoyá el cursor donde quieras y tocá "+ Insertar imagen" para meter una foto ahí en el medio.
+            </span>
           </label>
 
           <label>
