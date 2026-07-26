@@ -14,7 +14,9 @@ function formatearFecha(fecha) {
 
 // Convención simple para el contenido guardado como texto plano:
 // - Una línea que empieza con "## " se muestra como subtítulo.
-// - Una línea con formato ![alt](url) se muestra como imagen intercalada.
+// - Una línea ![alt](url) se muestra como imagen, a todo el ancho por defecto.
+// - Se le puede agregar "izquierda" o "derecha" después de la URL para que
+//   el texto la rodee al costado: ![alt](url) izquierda
 // - Una línea en blanco separa párrafos.
 function renderContenido(content) {
   if (!content) return null
@@ -22,7 +24,7 @@ function renderContenido(content) {
   const bloques = content.split('\n')
   const elementos = []
   let parrafoActual = []
-  const imagenRegex = /^!\[(.*?)\]\((.+?)\)$/
+  const imagenRegex = /^!\[(.*?)\]\((.+?)\)(?:\s+(izquierda|derecha))?$/i
 
   function cerrarParrafo(key) {
     if (parrafoActual.length > 0) {
@@ -46,13 +48,15 @@ function renderContenido(content) {
       )
     } else if (matchImagen) {
       cerrarParrafo(i)
-      const [, alt, url] = matchImagen
+      const [, alt, url, posicion] = matchImagen
+      const clases = ['post-detalle__inline-image']
+      if (posicion) clases.push(`post-detalle__inline-image--${posicion.toLowerCase()}`)
       elementos.push(
         <img
           key={`img-${i}`}
           src={url}
           alt={alt}
-          className="post-detalle__inline-image"
+          className={clases.join(' ')}
         />
       )
     } else if (trimmed === '') {
