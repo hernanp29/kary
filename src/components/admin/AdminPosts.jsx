@@ -25,8 +25,15 @@ export default function AdminPosts() {
     const url = window.prompt('Pegá la URL de la imagen:')
     if (!url) return
     const alt = window.prompt('Descripción breve de la imagen (opcional):', '') || ''
+    const posicionInput = (
+      window.prompt(
+        '¿Cómo va la imagen?\n\nDejá vacío = ancho completo (arriba y abajo)\nEscribí "izquierda" = imagen a la izquierda, texto al costado\nEscribí "derecha" = imagen a la derecha, texto al costado',
+        ''
+      ) || ''
+    ).trim().toLowerCase()
 
-    const snippet = `\n![${alt}](${url})\n`
+    const posicion = posicionInput === 'izquierda' || posicionInput === 'derecha' ? ` ${posicionInput}` : ''
+    const snippet = `\n![${alt}](${url})${posicion}\n`
     const textarea = contenidoRef.current
     const actual = form.content
 
@@ -42,9 +49,9 @@ export default function AdminPosts() {
 
     // Reubicar el cursor justo después de la imagen insertada
     requestAnimationFrame(() => {
-      const posicion = inicio + snippet.length
+      const posicionCursor = inicio + snippet.length
       textarea.focus()
-      textarea.setSelectionRange(posicion, posicion)
+      textarea.setSelectionRange(posicionCursor, posicionCursor)
     })
   }
 
