@@ -200,3 +200,78 @@
   letter-spacing: 0.03em;
   opacity: 0.7;
 }
+
+/* ---------- Servicios: tarjetas de altura pareja, expandibles ---------- */
+
+.servicio-card {
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+  overflow: hidden;
+  scroll-margin-top: 140px;
+  transition: height 0.3s ease;
+}
+
+@media (max-width: 640px) {
+  .servicio-card { scroll-margin-top: 76px; }
+}
+
+.servicio-card--expandida {
+  height: auto;
+}
+
+.servicio-card__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.servicio-card__compartir {
+  background: none;
+  border: none;
+  color: var(--moss);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-decoration: underline;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.servicio-card__compartir:hover {
+  color: var(--leaf-deep);
+}
+
+.servicio-card__descripcion {
+  position: relative;
+  max-height: 150px;
+  overflow: hidden;
+}
+
+.servicio-card__descripcion.is-expandida {
+  max-height: none;
+}
+
+.servicio-card__descripcion:not(.is-expandida)::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 44px;
+  background: linear-gradient(transparent, var(--paper-raised));
+}
+
+.servicio-card__toggle {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--leaf-deep);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  padding: 8px 0 4px;
+  text-decoration: underline;
+}
