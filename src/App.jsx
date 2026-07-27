@@ -24,6 +24,7 @@ export default function App() {
           <Route path="/tienda" element={<Tienda />} />
           <Route path="/talleres" element={<Talleres />} />
           <Route path="/servicios" element={<Servicios />} />
+          <Route path="/servicios/:slug" element={<Servicios />} />
           <Route path="/recursos-gratis" element={<RecursosGratis />} />
           <Route path="/login" element={<Login />} />
           <Route
@@ -40,5 +41,6 @@ export default function App() {
     </div>
   )
 }
+
 
 
