@@ -43,7 +43,6 @@ export default function Talleres() {
     <div className="container talleres">
       <header className="talleres__header">
         <span className="label-mono">Raíz — Talleres</span>
-        <h1>Próximamente...</h1>
       </header>
 
       {loading && <p className="label-mono">Cargando talleres…</p>}
