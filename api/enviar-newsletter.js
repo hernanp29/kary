@@ -35,6 +35,16 @@ async function getAuthorizedUser(req) {
 
 // Misma convención simple que ya usás en el contenido del blog:
 // "## " al inicio de línea = subtítulo. Línea en blanco = separa párrafos.
+// Además, [texto](url) dentro de un párrafo se convierte en un link real.
+function convertirLinks(texto) {
+  const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+)\)/g
+  return texto.replace(
+    linkRegex,
+    (_, textoLink, url) =>
+      `<a href="${url}" style="color:#b7924a;text-decoration:underline;" target="_blank" rel="noopener noreferrer">${textoLink}</a>`
+  )
+}
+
 function mensajeAHtml(mensaje) {
   const bloques = mensaje.split('\n')
   const partes = []
@@ -42,7 +52,7 @@ function mensajeAHtml(mensaje) {
 
   function cerrarParrafo() {
     if (parrafoActual.length > 0) {
-      partes.push(`<p style="margin:0 0 16px;line-height:1.6;">${parrafoActual.join(' ')}</p>`)
+      partes.push(`<p style="margin:0 0 16px;line-height:1.6;">${convertirLinks(parrafoActual.join(' '))}</p>`)
       parrafoActual = []
     }
   }
