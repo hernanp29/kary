@@ -26,6 +26,8 @@ export default function AdminNewsletter() {
   const [totalSuscriptores, setTotalSuscriptores] = useState(null)
   const [loadingCount, setLoadingCount] = useState(true)
   const [errorLista, setErrorLista] = useState('')
+  const [busqueda, setBusqueda] = useState('')
+  const [seleccionados, setSeleccionados] = useState(new Set())
 
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
@@ -40,6 +42,36 @@ export default function AdminNewsletter() {
   useEffect(() => {
     fetchCount()
   }, [])
+
+  const suscriptoresFiltrados = suscriptores.filter((s) => {
+    const q = busqueda.trim().toLowerCase()
+    if (!q) return true
+    return s.email.toLowerCase().includes(q) || (s.full_name || '').toLowerCase().includes(q)
+  })
+
+  const todosFiltradosSeleccionados =
+    suscriptoresFiltrados.length > 0 && suscriptoresFiltrados.every((s) => seleccionados.has(s.email))
+
+  function toggleUno(email) {
+    setSeleccionados((prev) => {
+      const next = new Set(prev)
+      if (next.has(email)) next.delete(email)
+      else next.add(email)
+      return next
+    })
+  }
+
+  function toggleTodosFiltrados() {
+    setSeleccionados((prev) => {
+      const next = new Set(prev)
+      if (todosFiltradosSeleccionados) {
+        suscriptoresFiltrados.forEach((s) => next.delete(s.email))
+      } else {
+        suscriptoresFiltrados.forEach((s) => next.add(s.email))
+      }
+      return next
+    })
+  }
 
   async function authHeader() {
     const { data } = await supabase.auth.getSession()
@@ -57,6 +89,7 @@ export default function AdminNewsletter() {
       if (res.ok) {
         setTotalSuscriptores(data.total)
         setSuscriptores(data.suscriptores || [])
+        setSeleccionados(new Set((data.suscriptores || []).map((s) => s.email)))
       } else {
         setErrorLista(data.error || 'No se pudo cargar la lista de suscriptores.')
       }
@@ -102,6 +135,7 @@ export default function AdminNewsletter() {
           subject,
           message,
           attachments: archivos.map(({ filename, contentType, content }) => ({ filename, contentType, content })),
+          destinatarios: Array.from(seleccionados),
         }),
       })
       const data = await res.json()
@@ -184,15 +218,15 @@ export default function AdminNewsletter() {
         )}
 
         {!confirming && (
-          <button type="submit" className="btn-primary" disabled={sending || !totalSuscriptores}>
-            Enviar a {totalSuscriptores ?? 0} suscriptor{totalSuscriptores === 1 ? '' : 'es'}
+          <button type="submit" className="btn-primary" disabled={sending || seleccionados.size === 0}>
+            Enviar a {seleccionados.size} de {totalSuscriptores ?? 0} suscriptor{totalSuscriptores === 1 ? '' : 'es'}
           </button>
         )}
 
         {confirming && (
           <div className="admin-form__actions">
             <p className="admin-error" style={{ width: '100%' }}>
-              ¿Confirmás el envío a los {totalSuscriptores} suscriptores? No se puede deshacer.
+              ¿Confirmás el envío a los {seleccionados.size} contactos seleccionados? No se puede deshacer.
             </p>
             <button type="button" className="btn-primary" disabled={sending} onClick={handleSend}>
               {sending ? 'Enviando…' : 'Sí, enviar ahora'}
@@ -216,26 +250,67 @@ export default function AdminNewsletter() {
       <h2 style={{ marginTop: '2.5rem' }}>Suscriptores</h2>
 
       {!loadingCount && suscriptores.length > 0 && (
-        <div style={{ maxHeight: '420px', overflowY: 'auto', border: '0.5px solid var(--linea, rgba(255,255,255,0.15))', borderRadius: '8px' }}>
-          <table className="admin-table" style={{ marginBottom: 0 }}>
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Suscripto el</th>
-              </tr>
-            </thead>
-            <tbody>
-              {suscriptores.map((s) => (
-                <tr key={s.email}>
-                  <td>{s.full_name || '—'}</td>
-                  <td>{s.email}</td>
-                  <td>{s.created_at ? new Date(s.created_at).toLocaleDateString('es-AR') : '—'}</td>
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '10px 0 14px', flexWrap: 'wrap' }}>
+            <input
+              type="text"
+              placeholder="Buscar por nombre o email…"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              style={{
+                flex: '1 1 240px',
+                padding: '8px 10px',
+                borderRadius: 6,
+                border: '0.5px solid var(--linea, rgba(255,255,255,0.15))',
+                background: 'transparent',
+                color: 'inherit',
+              }}
+            />
+            <button type="button" className="btn-secondary" onClick={toggleTodosFiltrados}>
+              {todosFiltradosSeleccionados ? 'Deseleccionar' : 'Seleccionar'} {busqueda ? 'estos' : 'todos'}
+            </button>
+            <span className="label-mono">{seleccionados.size} seleccionados</span>
+          </div>
+
+          <div style={{ maxHeight: '420px', overflowY: 'auto', border: '0.5px solid var(--linea, rgba(255,255,255,0.15))', borderRadius: '8px' }}>
+            <table className="admin-table" style={{ marginBottom: 0 }}>
+              <thead>
+                <tr>
+                  <th style={{ width: 32 }}>
+                    <input
+                      type="checkbox"
+                      checked={todosFiltradosSeleccionados}
+                      onChange={toggleTodosFiltrados}
+                    />
+                  </th>
+                  <th>Nombre</th>
+                  <th>Email</th>
+                  <th>Suscripto el</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {suscriptoresFiltrados.map((s) => (
+                  <tr key={s.email}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={seleccionados.has(s.email)}
+                        onChange={() => toggleUno(s.email)}
+                      />
+                    </td>
+                    <td>{s.full_name || '—'}</td>
+                    <td>{s.email}</td>
+                    <td>{s.created_at ? new Date(s.created_at).toLocaleDateString('es-AR') : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {suscriptoresFiltrados.length === 0 && (
+            <p className="admin-empty">Ningún suscriptor coincide con "{busqueda}".</p>
+          )}
+        </>
       )}
 
       {!loadingCount && suscriptores.length === 0 && !errorLista && (
