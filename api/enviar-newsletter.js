@@ -78,7 +78,7 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: 'No autorizado.' })
   }
 
-  const { subject, message, attachments } = req.body || {}
+  const { subject, message, attachments, destinatarios } = req.body || {}
   if (!subject || !subject.trim()) {
     return res.status(400).json({ error: 'Falta el asunto.' })
   }
@@ -86,7 +86,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Falta el contenido del mensaje.' })
   }
 
-  const { data: suscriptores, error: dbError } = await supabase
+  const { data: todosSuscriptores, error: dbError } = await supabase
     .from('suscriptores')
     .select('email, full_name')
 
@@ -95,8 +95,20 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'No se pudo obtener la lista de suscriptores.' })
   }
 
-  if (!suscriptores || suscriptores.length === 0) {
+  if (!todosSuscriptores || todosSuscriptores.length === 0) {
     return res.status(400).json({ error: 'No hay suscriptores para enviar.' })
+  }
+
+  // Si el admin eligió destinatarios puntuales, filtramos contra la lista real
+  // de suscriptores (nunca confiamos en emails sueltos que vengan del body).
+  let suscriptores = todosSuscriptores
+  if (Array.isArray(destinatarios) && destinatarios.length > 0) {
+    const set = new Set(destinatarios)
+    suscriptores = todosSuscriptores.filter((s) => set.has(s.email))
+  }
+
+  if (suscriptores.length === 0) {
+    return res.status(400).json({ error: 'No hay destinatarios seleccionados.' })
   }
 
   // Separar adjuntos: las imágenes se embeben en el cuerpo (cid),
