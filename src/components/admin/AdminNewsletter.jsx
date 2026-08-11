@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
 const MAX_TOTAL_MB = 12 // dejamos margen bajo el límite de 15mb del endpoint
@@ -38,6 +38,38 @@ export default function AdminNewsletter() {
   const [confirming, setConfirming] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
+
+  const mensajeRef = useRef(null)
+
+  function insertarLink() {
+    const url = window.prompt('Pegá la URL a la que tiene que apuntar (http:// o https://):')
+    if (!url) return
+    if (!/^https?:\/\//i.test(url) && !/^mailto:/i.test(url)) {
+      window.alert('El link tiene que empezar con http://, https:// o mailto:')
+      return
+    }
+    const texto = window.prompt('¿Qué texto querés que se muestre (ej: "Ver el taller")?', '') || url
+
+    const snippet = `[${texto}](${url})`
+    const textarea = mensajeRef.current
+    const actual = message
+
+    if (!textarea) {
+      setMessage(actual + snippet)
+      return
+    }
+
+    const inicio = textarea.selectionStart
+    const fin = textarea.selectionEnd
+    const nuevoMensaje = actual.slice(0, inicio) + snippet + actual.slice(fin)
+    setMessage(nuevoMensaje)
+
+    requestAnimationFrame(() => {
+      const posicion = inicio + snippet.length
+      textarea.focus()
+      textarea.setSelectionRange(posicion, posicion)
+    })
+  }
 
   useEffect(() => {
     fetchCount()
@@ -181,13 +213,24 @@ export default function AdminNewsletter() {
         </label>
 
         <label>
-          Mensaje
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+            Mensaje
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={insertarLink}
+              style={{ fontSize: '0.75rem', padding: '4px 10px' }}
+            >
+              + Insertar link
+            </button>
+          </span>
           <textarea
+            ref={mensajeRef}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             rows={10}
             required
-            placeholder={'Escribí acá el contenido.\n\nUsá "## " al inicio de una línea para un subtítulo, y una línea vacía para separar párrafos — igual que en el blog.'}
+            placeholder={'Escribí acá el contenido.\n\nUsá "## " al inicio de una línea para un subtítulo, y una línea vacía para separar párrafos — igual que en el blog.\n\nPara un link, usá el botón "+ Insertar link" o escribí [texto](https://ejemplo.com) a mano.'}
           />
         </label>
 
