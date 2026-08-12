@@ -21,6 +21,14 @@ function leerArchivoComoBase64(file) {
   })
 }
 
+// Para el <input type="datetime-local">: mínimo = ahora + 5 minutos, en hora local.
+function minimoFechaProgramada() {
+  const d = new Date(Date.now() + 5 * 60 * 1000)
+  d.setSeconds(0, 0)
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 export default function AdminNewsletter() {
   const [suscriptores, setSuscriptores] = useState([])
   const [totalSuscriptores, setTotalSuscriptores] = useState(null)
@@ -28,6 +36,7 @@ export default function AdminNewsletter() {
   const [errorLista, setErrorLista] = useState('')
   const [busqueda, setBusqueda] = useState('')
   const [seleccionados, setSeleccionados] = useState(new Set())
+  const [borrando, setBorrando] = useState(null)
 
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
@@ -38,6 +47,17 @@ export default function AdminNewsletter() {
   const [confirming, setConfirming] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
+
+  const [modoEnvio, setModoEnvio] = useState('ahora') // 'ahora' | 'programado'
+  const [fechaProgramada, setFechaProgramada] = useState('')
+  const [programando, setProgramando] = useState(false)
+  const [errorProgramar, setErrorProgramar] = useState('')
+  const [mensajeProgramado, setMensajeProgramado] = useState('')
+
+  const [programados, setProgramados] = useState([])
+  const [loadingProgramados, setLoadingProgramados] = useState(true)
+  const [procesandoAhora, setProcesandoAhora] = useState(false)
+  const [cancelandoId, setCancelandoId] = useState(null)
 
   const mensajeRef = useRef(null)
 
@@ -73,6 +93,7 @@ export default function AdminNewsletter() {
 
   useEffect(() => {
     fetchCount()
+    fetchProgramados()
   }, [])
 
   const suscriptoresFiltrados = suscriptores.filter((s) => {
@@ -132,6 +153,35 @@ export default function AdminNewsletter() {
     setLoadingCount(false)
   }
 
+  async function borrarSuscriptor(email) {
+    if (!confirm(`¿Borrar a ${email} de la lista de suscriptores? No se puede deshacer.`)) return
+
+    setBorrando(email)
+    try {
+      const headers = await authHeader()
+      const res = await fetch('/api/suscriptores-admin', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', ...headers },
+        body: JSON.stringify({ email }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.error || 'No se pudo borrar el suscriptor.')
+      } else {
+        setSuscriptores((prev) => prev.filter((s) => s.email !== email))
+        setTotalSuscriptores((prev) => (prev != null ? prev - 1 : prev))
+        setSeleccionados((prev) => {
+          const next = new Set(prev)
+          next.delete(email)
+          return next
+        })
+      }
+    } catch (err) {
+      alert('Algo salió mal: ' + err.message)
+    }
+    setBorrando(null)
+  }
+
   async function handleFileChange(e) {
     setArchivoError('')
     const files = Array.from(e.target.files || [])
@@ -188,6 +238,110 @@ export default function AdminNewsletter() {
     setConfirming(false)
   }
 
+  async function fetchProgramados() {
+    setLoadingProgramados(true)
+    try {
+      const headers = await authHeader()
+      const res = await fetch('/api/newsletters-programados', { headers })
+      const data = await res.json()
+      if (res.ok) setProgramados(data.programados || [])
+    } catch (err) {
+      console.error(err)
+    }
+    setLoadingProgramados(false)
+  }
+
+  async function handleProgramar(e) {
+    e.preventDefault()
+    setErrorProgramar('')
+    setMensajeProgramado('')
+
+    if (!fechaProgramada) {
+      setErrorProgramar('Elegí fecha y hora de envío.')
+      return
+    }
+
+    setProgramando(true)
+    try {
+      const headers = await authHeader()
+      const res = await fetch('/api/newsletters-programados', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...headers },
+        body: JSON.stringify({
+          subject,
+          message,
+          attachments: archivos.map(({ filename, contentType, content }) => ({ filename, contentType, content })),
+          destinatarios: Array.from(seleccionados),
+          scheduled_at: new Date(fechaProgramada).toISOString(),
+        }),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        setErrorProgramar(data.error || 'No se pudo programar el envío.')
+      } else {
+        setMensajeProgramado('¡Listo! Quedó programado.')
+        setSubject('')
+        setMessage('')
+        setArchivos([])
+        setFechaProgramada('')
+        fetchProgramados()
+      }
+    } catch (err) {
+      setErrorProgramar('Algo salió mal: ' + err.message)
+    }
+    setProgramando(false)
+  }
+
+  async function cancelarProgramado(id) {
+    if (!confirm('¿Cancelar este envío programado?')) return
+    setCancelandoId(id)
+    try {
+      const headers = await authHeader()
+      const res = await fetch('/api/newsletters-programados', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', ...headers },
+        body: JSON.stringify({ id }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.error || 'No se pudo cancelar.')
+      } else {
+        fetchProgramados()
+      }
+    } catch (err) {
+      alert('Algo salió mal: ' + err.message)
+    }
+    setCancelandoId(null)
+  }
+
+  async function procesarProgramadosAhora() {
+    setProcesandoAhora(true)
+    try {
+      const headers = await authHeader()
+      const res = await fetch('/api/cron-enviar-newsletters', { headers })
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.error || 'No se pudo procesar.')
+      } else if (data.procesados === 0) {
+        alert('No hay ningún envío programado que ya haya vencido su fecha.')
+      } else {
+        alert(`Se procesaron ${data.procesados} envío(s).`)
+        fetchProgramados()
+      }
+    } catch (err) {
+      alert('Algo salió mal: ' + err.message)
+    }
+    setProcesandoAhora(false)
+  }
+
+  const ESTADO_LABEL = {
+    pendiente: 'Pendiente',
+    enviado: 'Enviado',
+    error: 'Error',
+    cancelado: 'Cancelado',
+  }
+
   return (
     <div>
       <div className="admin-panel__header">
@@ -204,7 +358,8 @@ export default function AdminNewsletter() {
         className="admin-form"
         onSubmit={(e) => {
           e.preventDefault()
-          setConfirming(true)
+          if (modoEnvio === 'ahora') setConfirming(true)
+          else handleProgramar(e)
         }}
       >
         <label>
@@ -260,13 +415,41 @@ export default function AdminNewsletter() {
           </ul>
         )}
 
-        {!confirming && (
+        <div style={{ display: 'flex', gap: 18, alignItems: 'center', margin: '4px 0' }}>
+          <label style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
+            <input type="radio" checked={modoEnvio === 'ahora'} onChange={() => setModoEnvio('ahora')} />
+            Enviar ahora
+          </label>
+          <label style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
+            <input type="radio" checked={modoEnvio === 'programado'} onChange={() => setModoEnvio('programado')} />
+            Programar para más tarde
+          </label>
+        </div>
+
+        {modoEnvio === 'programado' && (
+          <label>
+            Fecha y hora de envío
+            <input
+              type="datetime-local"
+              value={fechaProgramada}
+              min={minimoFechaProgramada()}
+              onChange={(e) => setFechaProgramada(e.target.value)}
+              required
+            />
+            <span style={{ fontSize: '0.75rem', opacity: 0.65 }}>
+              Se manda automáticamente a los {seleccionados.size} contactos que tengas tildados en la lista de abajo
+              en ese momento (queda fijada esa lista, aunque después se sumen nuevos suscriptores).
+            </span>
+          </label>
+        )}
+
+        {modoEnvio === 'ahora' && !confirming && (
           <button type="submit" className="btn-primary" disabled={sending || seleccionados.size === 0}>
             Enviar a {seleccionados.size} de {totalSuscriptores ?? 0} suscriptor{totalSuscriptores === 1 ? '' : 'es'}
           </button>
         )}
 
-        {confirming && (
+        {modoEnvio === 'ahora' && confirming && (
           <div className="admin-form__actions">
             <p className="admin-error" style={{ width: '100%' }}>
               ¿Confirmás el envío a los {seleccionados.size} contactos seleccionados? No se puede deshacer.
@@ -280,7 +463,15 @@ export default function AdminNewsletter() {
           </div>
         )}
 
+        {modoEnvio === 'programado' && (
+          <button type="submit" className="btn-primary" disabled={programando || seleccionados.size === 0}>
+            {programando ? 'Programando…' : `Programar envío a ${seleccionados.size} contacto${seleccionados.size === 1 ? '' : 's'}`}
+          </button>
+        )}
+
         {error && <p className="admin-error">{error}</p>}
+        {errorProgramar && <p className="admin-error">{errorProgramar}</p>}
+        {mensajeProgramado && <p className="admin-form__mensaje">{mensajeProgramado}</p>}
 
         {result && (
           <p className="admin-form__mensaje">
@@ -289,6 +480,66 @@ export default function AdminNewsletter() {
           </p>
         )}
       </form>
+
+      <h2 style={{ marginTop: '2.5rem' }}>Programados</h2>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, margin: '10px 0 14px', flexWrap: 'wrap' }}>
+        <button type="button" className="btn-secondary" onClick={procesarProgramadosAhora} disabled={procesandoAhora}>
+          {procesandoAhora ? 'Procesando…' : 'Procesar vencidos ahora'}
+        </button>
+        <span style={{ fontSize: '0.75rem', opacity: 0.65 }}>
+          Los programados se envían solos cada 15 minutos. Usá este botón si necesitás forzarlo antes.
+        </span>
+      </div>
+
+      {loadingProgramados && <p className="label-mono">Cargando…</p>}
+
+      {!loadingProgramados && programados.length === 0 && (
+        <p className="admin-empty">No hay newsletters programados.</p>
+      )}
+
+      {!loadingProgramados && programados.length > 0 && (
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Asunto</th>
+              <th>Envío</th>
+              <th>Destinatarios</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {programados.map((p) => (
+              <tr key={p.id}>
+                <td>{p.subject}</td>
+                <td>{new Date(p.scheduled_at).toLocaleString('es-AR')}</td>
+                <td>{Array.isArray(p.destinatarios) ? p.destinatarios.length : '—'}</td>
+                <td>{ESTADO_LABEL[p.status] || p.status}</td>
+                <td className="admin-table__actions">
+                  {p.status === 'pendiente' && (
+                    <button
+                      className="btn-danger"
+                      onClick={() => cancelarProgramado(p.id)}
+                      disabled={cancelandoId === p.id}
+                    >
+                      {cancelandoId === p.id ? 'Cancelando…' : 'Cancelar'}
+                    </button>
+                  )}
+                  {p.status === 'enviado' && p.resultado && (
+                    <span className="label-mono">
+                      {p.resultado.enviados}/{p.resultado.total} ok
+                    </span>
+                  )}
+                  {p.status === 'error' && p.resultado?.error && (
+                    <span className="label-mono" title={p.resultado.error}>ver error</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <h2 style={{ marginTop: '2.5rem' }}>Suscriptores</h2>
 
@@ -329,6 +580,7 @@ export default function AdminNewsletter() {
                   <th>Nombre</th>
                   <th>Email</th>
                   <th>Suscripto el</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -344,6 +596,15 @@ export default function AdminNewsletter() {
                     <td>{s.full_name || '—'}</td>
                     <td>{s.email}</td>
                     <td>{s.created_at ? new Date(s.created_at).toLocaleDateString('es-AR') : '—'}</td>
+                    <td>
+                      <button
+                        className="btn-danger"
+                        onClick={() => borrarSuscriptor(s.email)}
+                        disabled={borrando === s.email}
+                      >
+                        {borrando === s.email ? 'Borrando…' : 'Borrar'}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -362,3 +623,4 @@ export default function AdminNewsletter() {
     </div>
   )
 }
+
