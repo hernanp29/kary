@@ -6,6 +6,29 @@ const WHATSAPP_NUMBER = '5491159377545'
 
 const formatPrice = (n) => new Intl.NumberFormat('es-AR').format(n)
 
+// Muestra la descripción con subtítulos y párrafos.
+// Para un subtítulo, empezá el bloque con "## " (dejando una línea en blanco antes y después).
+function DescripcionTaller({ texto }) {
+  const bloques = (texto || '')
+    .split(/\n{2,}/)
+    .map((b) => b.trim())
+    .filter(Boolean)
+
+  return (
+    <div className="workshop-row__descripcion">
+      {bloques.map((bloque, i) =>
+        bloque.startsWith('## ') ? (
+          <h4 key={i} className="workshop-row__subtitulo">
+            {bloque.slice(3)}
+          </h4>
+        ) : (
+          <p key={i}>{bloque}</p>
+        )
+      )}
+    </div>
+  )
+}
+
 export default function Talleres() {
   const [workshops, setWorkshops] = useState([])
   const [loading, setLoading] = useState(true)
@@ -71,7 +94,7 @@ export default function Talleres() {
                 />
               )}
               <h3>{w.title}</h3>
-              <p>{w.description}</p>
+              <DescripcionTaller texto={w.description} />
               {w.modality === 'presencial' && w.capacity && (
                 <span className="label-mono">Cupo: {w.capacity} personas</span>
               )}
