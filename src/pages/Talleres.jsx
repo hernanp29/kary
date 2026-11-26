@@ -6,27 +6,55 @@ const WHATSAPP_NUMBER = '5491159377545'
 
 const formatPrice = (n) => new Intl.NumberFormat('es-AR').format(n)
 
-// Muestra la descripción con subtítulos y párrafos.
-// Para un subtítulo, empezá el bloque con "## " (dejando una línea en blanco antes y después).
-function DescripcionTaller({ texto }) {
-  const bloques = (texto || '')
-    .split(/\n{2,}/)
-    .map((b) => b.trim())
-    .filter(Boolean)
+// Misma convención que Publicaciones (texto plano):
+// - Una línea que empieza con "## " se muestra como subtítulo.
+// - Una línea ![alt](url) se muestra como imagen, a todo el ancho por defecto.
+// - Se le puede agregar "izquierda" o "derecha" después de la URL para que
+//   el texto la rodee al costado: ![alt](url) izquierda
+// - Una línea en blanco separa párrafos.
+function renderDescripcion(content) {
+  if (!content) return null
 
-  return (
-    <div className="workshop-row__descripcion">
-      {bloques.map((bloque, i) =>
-        bloque.startsWith('## ') ? (
-          <h4 key={i} className="workshop-row__subtitulo">
-            {bloque.slice(3)}
-          </h4>
-        ) : (
-          <p key={i}>{bloque}</p>
-        )
-      )}
-    </div>
-  )
+  const lineas = content.split('\n')
+  const elementos = []
+  let parrafoActual = []
+  const imagenRegex = /^!\[(.*?)\]\((.+?)\)(?:\s+(izquierda|derecha))?$/i
+
+  function cerrarParrafo(key) {
+    if (parrafoActual.length > 0) {
+      elementos.push(<p key={`p-${key}`}>{parrafoActual.join(' ')}</p>)
+      parrafoActual = []
+    }
+  }
+
+  lineas.forEach((linea, i) => {
+    const trimmed = linea.trim()
+    const matchImagen = trimmed.match(imagenRegex)
+
+    if (trimmed.startsWith('## ')) {
+      cerrarParrafo(i)
+      elementos.push(
+        <h4 key={`h-${i}`} className="workshop-row__subtitulo">
+          {trimmed.slice(3)}
+        </h4>
+      )
+    } else if (matchImagen) {
+      cerrarParrafo(i)
+      const [, alt, url, posicion] = matchImagen
+      const clases = ['workshop-row__inline-image']
+      if (posicion) clases.push(`workshop-row__inline-image--${posicion.toLowerCase()}`)
+      elementos.push(
+        <img key={`img-${i}`} src={url} alt={alt} className={clases.join(' ')} />
+      )
+    } else if (trimmed === '') {
+      cerrarParrafo(i)
+    } else {
+      parrafoActual.push(trimmed)
+    }
+  })
+
+  cerrarParrafo('final')
+  return elementos
 }
 
 export default function Talleres() {
@@ -94,7 +122,7 @@ export default function Talleres() {
                 />
               )}
               <h3>{w.title}</h3>
-              <DescripcionTaller texto={w.description} />
+              <div className="workshop-row__descripcion">{renderDescripcion(w.description)}</div>
               {w.modality === 'presencial' && w.capacity && (
                 <span className="label-mono">Cupo: {w.capacity} personas</span>
               )}
