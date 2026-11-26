@@ -27,6 +27,23 @@
 .workshop-row__body h3 { font-size: 1.05rem; margin: 6px 0; }
 .workshop-row__body p { color: var(--moss); font-size: 0.88rem; margin: 0 0 6px; }
 
+/* Descripción con subtítulos */
+.workshop-row__descripcion p {
+  color: var(--moss);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0 0 10px;
+  white-space: pre-line;
+}
+
+.workshop-row__subtitulo {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--dorado-claro);
+  margin: 16px 0 8px;
+}
+
 .workshop-row__image {
   display: block;
   width: 100%;
