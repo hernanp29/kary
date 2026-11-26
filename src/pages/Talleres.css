@@ -33,16 +33,42 @@
   font-size: 0.88rem;
   line-height: 1.6;
   margin: 0 0 10px;
-  white-space: pre-line;
+}
+
+.workshop-row__descripcion::after {
+  content: '';
+  display: table;
+  clear: both;
 }
 
 .workshop-row__subtitulo {
+  clear: both;
   font-family: var(--font-display);
   font-size: 1rem;
   font-style: italic;
   color: var(--dorado-claro);
   margin: 16px 0 8px;
 }
+
+/* Imágenes dentro de la descripción (igual que en Publicaciones) */
+.workshop-row__inline-image {
+  display: block;
+  width: 100%;
+  max-height: 340px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  margin: 16px 0;
+}
+
+.workshop-row__inline-image--izquierda,
+.workshop-row__inline-image--derecha {
+  width: 45%;
+  max-height: 260px;
+  margin: 4px 0 12px;
+}
+
+.workshop-row__inline-image--izquierda { float: left; margin-right: 18px; }
+.workshop-row__inline-image--derecha { float: right; margin-left: 18px; }
 
 .workshop-row__image {
   display: block;
@@ -88,4 +114,11 @@
   .workshop-row__date { text-align: left; }
   .workshop-row__action { flex-direction: row; justify-content: space-between; }
   .workshop-row__image { max-width: 100%; }
+  /* En celular el texto al costado de una imagen se lee mal: siempre apilado */
+  .workshop-row__inline-image--izquierda,
+  .workshop-row__inline-image--derecha {
+    float: none;
+    width: 100%;
+    margin: 16px 0;
+  }
 }
